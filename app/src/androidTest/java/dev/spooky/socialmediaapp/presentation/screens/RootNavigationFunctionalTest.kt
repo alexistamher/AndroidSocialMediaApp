@@ -8,7 +8,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class RootNavigationTest {
+class RootNavigationFunctionalTest {
     @get:Rule
     val rule = createComposeRule()
 

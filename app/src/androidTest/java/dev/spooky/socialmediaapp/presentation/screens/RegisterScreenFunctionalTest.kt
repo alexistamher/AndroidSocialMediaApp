@@ -9,7 +9,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class RegisterScreenTest {
+class RegisterScreenFunctionalTest {
     @get:Rule
     val rule = createComposeRule()
 
