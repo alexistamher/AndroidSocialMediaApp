@@ -1,0 +1,139 @@
+package dev.spooky.socialmediaapp.presentation.screens
+
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.performTextInput
+import org.junit.Rule
+import org.junit.Test
+
+class RegisterScreenTest {
+    @get:Rule
+    val rule = createComposeRule()
+
+    val usernameField = hasTestTag("username_field")
+    val displayNameField = hasTestTag("display_name_field")
+    val emailField = hasTestTag("email_field")
+    val passwordField = hasTestTag("password_field")
+    val repeatPasswordField = hasTestTag("repeat_password_field")
+    val signUpButton = hasTestTag("signup_button")
+
+    @Test
+    fun testRegisterHomeDisplaysSuccessfully() {
+        rule.setContent { RegisterScreen() }
+    }
+
+    @Test
+    fun testRegisterScreenValidForm() {
+        rule.setContent { RegisterScreen() }
+
+        rule.onNode(displayNameField).performTextInput("John Connor")
+        rule.onNode(usernameField).performTextInput("jconnor1")
+        rule.onNode(emailField).performTextInput("jconnor@mail.com")
+        rule.onNode(passwordField).performTextInput("Qwerty123")
+        rule.onNode(repeatPasswordField).performTextInput("Qwerty123")
+
+        rule.onNode(signUpButton).assertIsEnabled()
+    }
+
+    @Test
+    fun testDisplayNameErrorMessageDisplays() {
+        rule.setContent { RegisterScreen() }
+        val errorHelper = hasTestTag("display_name_error_helper")
+
+        rule.onNode(displayNameField).performTextInput("John")
+        rule.onNode(usernameField).performTextInput("jconnor1")
+        rule.onNode(emailField).performTextInput("jconnor@mail.com")
+        rule.onNode(passwordField).performTextInput("Qwerty123")
+        rule.onNode(repeatPasswordField).performTextInput("Qwerty123")
+
+        rule.onNode(errorHelper, useUnmergedTree = true).assertExists()
+        rule.onNode(signUpButton).assertIsNotEnabled()
+
+        rule.onNode(displayNameField).performTextInput(" Connor")
+
+        rule.onNode(errorHelper, useUnmergedTree = true).assertDoesNotExist()
+        rule.onNode(signUpButton).assertIsEnabled()
+    }
+
+    @Test
+    fun testUsernameErrorMessageDisplays() {
+        rule.setContent { RegisterScreen() }
+        val errorHelper = hasTestTag("username_error_helper")
+
+        rule.onNode(displayNameField).performTextInput("John Connor")
+        rule.onNode(usernameField).performTextInput("jconnor")
+        rule.onNode(emailField).performTextInput("jconnor@mail.com")
+        rule.onNode(passwordField).performTextInput("Qwerty123")
+        rule.onNode(repeatPasswordField).performTextInput("Qwerty123")
+
+        rule.onNode(errorHelper, useUnmergedTree = true).assertExists()
+        rule.onNode(signUpButton).assertIsNotEnabled()
+
+        rule.onNode(usernameField).performTextInput("jconnor92")
+
+        rule.onNode(errorHelper, useUnmergedTree = true).assertDoesNotExist()
+        rule.onNode(signUpButton).assertIsEnabled()
+    }
+
+    @Test
+    fun testEmailErrorMessageDisplays() {
+        rule.setContent { RegisterScreen() }
+        val errorHelper = hasTestTag("email_error_helper")
+
+        rule.onNode(displayNameField).performTextInput("John Connor")
+        rule.onNode(usernameField).performTextInput("jconnor92")
+        rule.onNode(emailField).performTextInput("jconnor92")
+        rule.onNode(passwordField).performTextInput("Qwerty123")
+        rule.onNode(repeatPasswordField).performTextInput("Qwerty123")
+
+        rule.onNode(errorHelper, useUnmergedTree = true).assertExists()
+        rule.onNode(signUpButton).assertIsNotEnabled()
+
+        rule.onNode(emailField).performTextInput("@mail.com")
+
+        rule.onNode(errorHelper, useUnmergedTree = true).assertDoesNotExist()
+        rule.onNode(signUpButton).assertIsEnabled()
+    }
+
+    @Test
+    fun testPasswordErrorMessageDisplays() {
+        rule.setContent { RegisterScreen() }
+        val errorHelper = hasTestTag("password_error_helper")
+
+        rule.onNode(displayNameField).performTextInput("John Connor")
+        rule.onNode(usernameField).performTextInput("jconnor92")
+        rule.onNode(emailField).performTextInput("jconnor92@mail.com")
+        rule.onNode(passwordField).performTextInput("Qwerty")
+        rule.onNode(repeatPasswordField).performTextInput("Qwerty123")
+
+        rule.onNode(errorHelper, useUnmergedTree = true).assertExists()
+        rule.onNode(signUpButton).assertIsNotEnabled()
+
+        rule.onNode(passwordField).performTextInput("123")
+
+        rule.onNode(errorHelper, useUnmergedTree = true).assertDoesNotExist()
+        rule.onNode(signUpButton).assertIsEnabled()
+    }
+
+    @Test
+    fun testRepeatPasswordErrorMessageDisplays() {
+        rule.setContent { RegisterScreen() }
+        val errorHelper = hasTestTag("repeat_password_error_helper")
+
+        rule.onNode(displayNameField).performTextInput("John Connor")
+        rule.onNode(usernameField).performTextInput("jconnor92")
+        rule.onNode(emailField).performTextInput("jconnor92@mail.com")
+        rule.onNode(passwordField).performTextInput("Qwerty123")
+        rule.onNode(repeatPasswordField).performTextInput("Qwerty")
+
+        rule.onNode(errorHelper, useUnmergedTree = true).assertExists()
+        rule.onNode(signUpButton).assertIsNotEnabled()
+
+        rule.onNode(repeatPasswordField).performTextInput("123")
+
+        rule.onNode(errorHelper, useUnmergedTree = true).assertDoesNotExist()
+        rule.onNode(signUpButton).assertIsEnabled()
+    }
+}

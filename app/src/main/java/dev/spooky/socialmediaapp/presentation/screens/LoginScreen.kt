@@ -1,11 +1,9 @@
 package dev.spooky.socialmediaapp.presentation.screens
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -14,19 +12,50 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dev.spooky.socialmediaapp.presentation.FormError
+import dev.spooky.socialmediaapp.presentation.util.isEmailValid
+import dev.spooky.socialmediaapp.presentation.util.isPasswordValid
+import dev.spooky.socialmediaapp.ui.theme.SocialMediaAppTheme
 
 @Composable
 fun LoginScreen() {
+    var formErrors by remember { mutableStateOf(emptyMap<FormError, String>()) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    val formValid by remember { derivedStateOf { formErrors.isEmpty() && email.isNotEmpty() && password.isNotEmpty() } }
+
+    fun onEmailChange(value: String) {
+        email = value
+        if (!isEmailValid(value)) {
+            formErrors += (FormError.EMAIL_FORMAT to "email does not have email format")
+            return
+        }
+
+        formErrors = formErrors.filterNot { it.key == FormError.EMAIL_FORMAT }
+    }
+
+    fun onPasswordChange(value: String) {
+        password = value
+        if (!isPasswordValid(value)) {
+            formErrors += (FormError.PASSWORD_FORMAT to "must contain digits, lowercase and uppercase letters and minimum length of 8")
+            return
+        }
+
+        formErrors = formErrors.filterNot { it.key == FormError.PASSWORD_FORMAT }
+    }
 
     Scaffold { mainPadding ->
         Column(
@@ -38,38 +67,68 @@ fun LoginScreen() {
             verticalArrangement = Arrangement.spacedBy(30.dp, Alignment.CenterVertically),
         ) {
             Text("Login", style = MaterialTheme.typography.titleLarge)
-            OutlinedTextField(email, onValueChange = {
-                email = it
-            }, Modifier.fillMaxWidth(), label = {
-                Text("Email")
-            })
-            Box(Modifier.fillMaxWidth()) {
-                OutlinedTextField(password, onValueChange = {
-                    password = it
-                }, Modifier.fillMaxWidth(), label = {
+
+            OutlinedTextField(
+                email, onValueChange = ::onEmailChange,
+                Modifier
+                    .semantics {
+                        contentDescription = "email text field"
+                        testTag = "email_field"
+                    }
+                    .fillMaxWidth(),
+                label = {
+                    Text("Email")
+                },
+                isError = FormError.EMAIL_FORMAT in formErrors,
+                supportingText = {
+                    if (FormError.EMAIL_FORMAT !in formErrors) return@OutlinedTextField
+                    Text(formErrors.getValue(FormError.EMAIL_FORMAT), Modifier.testTag("email_error_helper"))
+                },
+            )
+
+            OutlinedTextField(
+                password, onValueChange = ::onPasswordChange,
+                Modifier
+                    .semantics {
+                        contentDescription = "password text field"
+                        testTag = "password_field"
+                    }
+                    .fillMaxWidth(),
+                label = {
                     Text("Password")
-                })
+                },
+                isError = FormError.PASSWORD_FORMAT in formErrors,
+                supportingText = {
+                    if (formErrors.isNotEmpty() && formErrors.containsKey(FormError.PASSWORD_FORMAT)) return@OutlinedTextField
+                    Text(formErrors.getValue(FormError.PASSWORD_FORMAT), Modifier.testTag("password_error_helper"))
+                },
+            )
 
-                TextButton(
-                    {},
-                    Modifier
-                        .align(Alignment.TopEnd)
-                        .offset(y = (-28).dp),
-
-                    ) {
-                    Text("Forgot?")
-                }
-            }
-
-            Button({}, Modifier.fillMaxWidth()) {
+            Button(
+                {},
+                Modifier
+                    .semantics {
+                        contentDescription = "signin button"
+                        testTag = "login_button"
+                    }
+                    .fillMaxWidth(),
+                enabled = formValid,
+            ) {
                 Text(
-                    "Login", Modifier.padding(12.dp)
+                    "Login",
+                    Modifier
+                        .padding(12.dp),
                 )
             }
 
             TextButton({
 
-            }, Modifier.padding(top = 12.dp)) {
+            }, Modifier
+                .padding(top = 12.dp)
+                .semantics {
+                    contentDescription = "navigate to signup screen"
+                    testTag = "navigate_to_singup_button"
+                }) {
                 Text("Don't have an account? Sign up")
             }
         }
@@ -78,6 +137,6 @@ fun LoginScreen() {
 
 @Preview
 @Composable
-private fun PreviewLoginScree() {
+private fun PreviewLoginScree() = SocialMediaAppTheme(dynamicColor = false) {
     LoginScreen()
 }
