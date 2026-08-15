@@ -34,7 +34,9 @@ import dev.spooky.socialmediaapp.presentation.models.PostPreview
 import kotlin.random.Random
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onLogout: () -> Unit,
+) {
     val posts = MutableList(20) {
         val wordsSize = Random.nextInt(40) + 10
         val content = LoremIpsum(words = wordsSize).values.joinToString()
@@ -75,7 +77,7 @@ fun HomeScreen() {
 @Preview
 @Composable
 private fun PreviewHomeScreen() {
-    HomeScreen()
+    HomeScreen(onLogout = {})
 }
 
 @Composable

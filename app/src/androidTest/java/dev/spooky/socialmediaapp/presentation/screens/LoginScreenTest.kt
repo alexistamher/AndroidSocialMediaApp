@@ -6,6 +6,7 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.performTextInput
 import kotlinx.coroutines.test.runTest
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -19,15 +20,18 @@ class LoginScreenTest {
     val mailErrorHelper = hasTestTag("email_error_helper")
     val passwordErrorHelper = hasTestTag("password_error_helper")
 
+    @Before
+    fun startup() {
+        rule.setContent { LoginScreen(onNavigateToRegister = {}, onLoginSuccess = {}) }
+    }
+
     @Test
     fun testLoginHomeDisplaysSuccessfully() {
-        rule.setContent { LoginScreen() }
+        rule.onNode(hasTestTag("signin_screen"), useUnmergedTree = true).assertExists()
     }
 
     @Test
     fun testLoginScreenValidForm() {
-        rule.setContent { LoginScreen() }
-
         rule.onNode(emailField).performTextInput("jperez@mail.com")
         rule.onNode(passwordField).performTextInput("Qwerty123")
 
@@ -37,8 +41,6 @@ class LoginScreenTest {
 
     @Test
     fun testCheckEmailValidationWorks() = runTest {
-        rule.setContent { LoginScreen() }
-
         rule.onNode(emailField).performTextInput("jperez")
         rule.onNode(passwordField).performTextInput("Qwerty123")
 
@@ -53,8 +55,6 @@ class LoginScreenTest {
 
     @Test
     fun testChekPasswordValidationWorks()  {
-        rule.setContent { LoginScreen() }
-
         rule.onNode(emailField).performTextInput("jperez@mail.com")
         rule.onNode(passwordField).performTextInput("qwerty123")
 

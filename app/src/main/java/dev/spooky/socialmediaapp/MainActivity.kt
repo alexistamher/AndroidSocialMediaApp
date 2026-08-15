@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import dev.spooky.socialmediaapp.presentation.screens.LoginScreen
+import dev.spooky.socialmediaapp.navigation.RootNavigation
 import dev.spooky.socialmediaapp.ui.theme.SocialMediaAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SocialMediaAppTheme {
-                LoginScreen()
+                RootNavigation()
             }
         }
     }

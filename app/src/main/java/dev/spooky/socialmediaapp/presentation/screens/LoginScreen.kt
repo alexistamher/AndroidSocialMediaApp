@@ -31,7 +31,10 @@ import dev.spooky.socialmediaapp.presentation.util.isPasswordValid
 import dev.spooky.socialmediaapp.ui.theme.SocialMediaAppTheme
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(
+    onNavigateToRegister: () -> Unit,
+    onLoginSuccess: () -> Unit,
+) {
     var formErrors by remember { mutableStateOf(emptyMap<FormError, String>()) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -57,7 +60,9 @@ fun LoginScreen() {
         formErrors = formErrors.filterNot { it.key == FormError.PASSWORD_FORMAT }
     }
 
-    Scaffold { mainPadding ->
+    Scaffold(Modifier.semantics {
+        testTag = "signin_screen"
+    }) { mainPadding ->
         Column(
             Modifier
                 .padding(mainPadding)
@@ -81,8 +86,8 @@ fun LoginScreen() {
                 },
                 isError = FormError.EMAIL_FORMAT in formErrors,
                 supportingText = {
-                    if (FormError.EMAIL_FORMAT !in formErrors) return@OutlinedTextField
-                    Text(formErrors.getValue(FormError.EMAIL_FORMAT), Modifier.testTag("email_error_helper"))
+                    val message =  formErrors[FormError.EMAIL_FORMAT] ?: return@OutlinedTextField
+                    Text(message, Modifier.testTag("email_error_helper"))
                 },
             )
 
@@ -99,8 +104,8 @@ fun LoginScreen() {
                 },
                 isError = FormError.PASSWORD_FORMAT in formErrors,
                 supportingText = {
-                    if (formErrors.isNotEmpty() && formErrors.containsKey(FormError.PASSWORD_FORMAT)) return@OutlinedTextField
-                    Text(formErrors.getValue(FormError.PASSWORD_FORMAT), Modifier.testTag("password_error_helper"))
+                    val message = formErrors[FormError.PASSWORD_FORMAT] ?: return@OutlinedTextField
+                    Text(message, Modifier.testTag("password_error_helper"))
                 },
             )
 
@@ -121,9 +126,7 @@ fun LoginScreen() {
                 )
             }
 
-            TextButton({
-
-            }, Modifier
+            TextButton(onNavigateToRegister, Modifier
                 .padding(top = 12.dp)
                 .semantics {
                     contentDescription = "navigate to signup screen"
@@ -138,5 +141,5 @@ fun LoginScreen() {
 @Preview
 @Composable
 private fun PreviewLoginScree() = SocialMediaAppTheme(dynamicColor = false) {
-    LoginScreen()
+    LoginScreen(onNavigateToRegister = {}, onLoginSuccess = {})
 }

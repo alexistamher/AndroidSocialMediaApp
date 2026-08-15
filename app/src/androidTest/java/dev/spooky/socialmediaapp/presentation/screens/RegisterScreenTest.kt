@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.performTextInput
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -19,15 +20,18 @@ class RegisterScreenTest {
     val repeatPasswordField = hasTestTag("repeat_password_field")
     val signUpButton = hasTestTag("signup_button")
 
+    @Before
+    fun startup() {
+        rule.setContent { RegisterScreen(onNavigateToLogin = {}, onRegisterSuccess = {}) }
+    }
+
     @Test
     fun testRegisterHomeDisplaysSuccessfully() {
-        rule.setContent { RegisterScreen() }
+        rule.onNode(hasTestTag("signup_screen")).assertExists()
     }
 
     @Test
     fun testRegisterScreenValidForm() {
-        rule.setContent { RegisterScreen() }
-
         rule.onNode(displayNameField).performTextInput("John Connor")
         rule.onNode(usernameField).performTextInput("jconnor1")
         rule.onNode(emailField).performTextInput("jconnor@mail.com")
@@ -39,7 +43,6 @@ class RegisterScreenTest {
 
     @Test
     fun testDisplayNameErrorMessageDisplays() {
-        rule.setContent { RegisterScreen() }
         val errorHelper = hasTestTag("display_name_error_helper")
 
         rule.onNode(displayNameField).performTextInput("John")
@@ -59,7 +62,6 @@ class RegisterScreenTest {
 
     @Test
     fun testUsernameErrorMessageDisplays() {
-        rule.setContent { RegisterScreen() }
         val errorHelper = hasTestTag("username_error_helper")
 
         rule.onNode(displayNameField).performTextInput("John Connor")
@@ -79,7 +81,6 @@ class RegisterScreenTest {
 
     @Test
     fun testEmailErrorMessageDisplays() {
-        rule.setContent { RegisterScreen() }
         val errorHelper = hasTestTag("email_error_helper")
 
         rule.onNode(displayNameField).performTextInput("John Connor")
@@ -99,7 +100,6 @@ class RegisterScreenTest {
 
     @Test
     fun testPasswordErrorMessageDisplays() {
-        rule.setContent { RegisterScreen() }
         val errorHelper = hasTestTag("password_error_helper")
 
         rule.onNode(displayNameField).performTextInput("John Connor")
@@ -119,7 +119,6 @@ class RegisterScreenTest {
 
     @Test
     fun testRepeatPasswordErrorMessageDisplays() {
-        rule.setContent { RegisterScreen() }
         val errorHelper = hasTestTag("repeat_password_error_helper")
 
         rule.onNode(displayNameField).performTextInput("John Connor")

@@ -31,7 +31,10 @@ import dev.spooky.socialmediaapp.presentation.util.isPasswordValid
 import dev.spooky.socialmediaapp.ui.theme.SocialMediaAppTheme
 
 @Composable
-fun RegisterScreen() {
+fun RegisterScreen(
+    onNavigateToLogin: () -> Unit,
+    onRegisterSuccess: () -> Unit,
+) {
     var name by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -43,7 +46,7 @@ fun RegisterScreen() {
             formErrors.isEmpty() && name.isNotEmpty() && username.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty() && repeatPassword.isNotEmpty()
         }
     }
-    
+
     fun checkPasswordMatch() {
         if (repeatPassword != password) {
             formErrors += (FormError.PASSWORD_MATCHING to "passwords does not match")
@@ -99,7 +102,9 @@ fun RegisterScreen() {
         checkPasswordMatch()
     }
 
-    Scaffold { mainPadding ->
+    Scaffold(Modifier.semantics {
+        testTag = "signup_screen"
+    }) { mainPadding ->
         Column(
             Modifier
                 .padding(mainPadding)
@@ -119,8 +124,8 @@ fun RegisterScreen() {
                     },
                 isError = FormError.DISPLAY_NAME_FORMAT in formErrors,
                 supportingText = {
-                    if (FormError.DISPLAY_NAME_FORMAT !in formErrors) return@OutlinedTextField
-                    Text(formErrors.getValue(FormError.DISPLAY_NAME_FORMAT), Modifier.testTag("display_name_error_helper"))
+                    val message = formErrors[FormError.DISPLAY_NAME_FORMAT] ?: return@OutlinedTextField
+                    Text(message, Modifier.testTag("display_name_error_helper"))
                 },
                 label = {
                     Text("Display name")
@@ -136,8 +141,8 @@ fun RegisterScreen() {
                     },
                 isError = FormError.USERNAME_FORMAT in formErrors,
                 supportingText = {
-                    if (FormError.USERNAME_FORMAT !in formErrors) return@OutlinedTextField
-                    Text(formErrors.getValue(FormError.USERNAME_FORMAT), Modifier.testTag("username_error_helper"))
+                    val message = formErrors[FormError.USERNAME_FORMAT] ?: return@OutlinedTextField
+                    Text(message, Modifier.testTag("username_error_helper"))
                 },
                 label = {
                     Text("Username")
@@ -153,8 +158,8 @@ fun RegisterScreen() {
                     },
                 isError = FormError.EMAIL_FORMAT in formErrors,
                 supportingText = {
-                    if (FormError.EMAIL_FORMAT !in formErrors) return@OutlinedTextField
-                    Text(formErrors.getValue(FormError.EMAIL_FORMAT), Modifier.testTag("email_error_helper"))
+                    val message = formErrors[FormError.EMAIL_FORMAT] ?: return@OutlinedTextField
+                    Text(message, Modifier.testTag("email_error_helper"))
                 },
                 label = {
                     Text("Email")
@@ -170,8 +175,8 @@ fun RegisterScreen() {
                     },
                 isError = FormError.PASSWORD_FORMAT in formErrors,
                 supportingText = {
-                    if (FormError.PASSWORD_FORMAT !in formErrors) return@OutlinedTextField
-                    Text(formErrors.getValue(FormError.PASSWORD_FORMAT), Modifier.testTag("password_error_helper"))
+                    val message = formErrors[FormError.PASSWORD_FORMAT] ?: return@OutlinedTextField
+                    Text(message, Modifier.testTag("password_error_helper"))
                 },
                 label = {
                     Text("Password")
@@ -187,8 +192,8 @@ fun RegisterScreen() {
                     },
                 isError = FormError.PASSWORD_MATCHING in formErrors,
                 supportingText = {
-                    if (FormError.PASSWORD_MATCHING !in formErrors) return@OutlinedTextField
-                    Text(formErrors.getValue(FormError.PASSWORD_MATCHING), Modifier.testTag("repeat_password_error_helper"))
+                    val message = formErrors[FormError.PASSWORD_MATCHING] ?: return@OutlinedTextField
+                    Text(message, Modifier.testTag("repeat_password_error_helper"))
                 },
                 label = {
                     Text("Repeat password")
@@ -210,9 +215,7 @@ fun RegisterScreen() {
             }
 
             TextButton(
-                {
-
-                },
+                onNavigateToLogin,
                 Modifier
                     .padding(top = 12.dp)
                     .semantics {
@@ -229,5 +232,5 @@ fun RegisterScreen() {
 @Preview
 @Composable
 private fun PreviewRegisterScreen() = SocialMediaAppTheme(dynamicColor = false) {
-    RegisterScreen()
+    RegisterScreen(onNavigateToLogin = {}, onRegisterSuccess = {})
 }
