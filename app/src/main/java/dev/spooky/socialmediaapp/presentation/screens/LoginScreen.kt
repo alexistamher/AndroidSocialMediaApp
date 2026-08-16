@@ -58,10 +58,8 @@ internal fun LoginScreen(
     var password by remember { mutableStateOf("") }
     val formValid by remember { derivedStateOf { formErrors.isEmpty() && email.isNotEmpty() && password.isNotEmpty() } }
 
-    LaunchedEffect(state) {
-        if (state is ScreenState.Success) {
-            onLoginSuccess()
-        }
+    LaunchedEffect(Unit) {
+        viewModel.onLoginSuccess = onLoginSuccess
     }
 
     fun onEmailChange(value: String) {
@@ -184,6 +182,7 @@ internal class LoginViewModel(
     private val _state: MutableStateFlow<ScreenState<Unit>> = MutableStateFlow(ScreenState.Idle)
     val state: StateFlow<ScreenState<Unit>>
         get() = _state.asStateFlow()
+    lateinit var onLoginSuccess: () -> Unit
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
@@ -193,6 +192,7 @@ internal class LoginViewModel(
                 return@launch
             }
             _state.update { ScreenState.Success(Unit) }
+            onLoginSuccess()
         }
     }
 

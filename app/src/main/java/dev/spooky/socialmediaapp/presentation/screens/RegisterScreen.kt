@@ -12,6 +12,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,15 +26,28 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dev.spooky.socialmediaapp.core.util.error
+import dev.spooky.socialmediaapp.domain.usecase.auth.RegisterUseCase
 import dev.spooky.socialmediaapp.presentation.FormError
+import dev.spooky.socialmediaapp.presentation.util.ScreenState
 import dev.spooky.socialmediaapp.presentation.util.isEmailValid
 import dev.spooky.socialmediaapp.presentation.util.isPasswordValid
 import dev.spooky.socialmediaapp.ui.theme.SocialMediaAppTheme
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 @Composable
-fun RegisterScreen(
+internal fun RegisterScreen(
     onNavigateToLogin: () -> Unit,
     onRegisterSuccess: () -> Unit,
+    viewModel: RegisterViewModel = koinInject<RegisterViewModel>(),
 ) {
     var name by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
@@ -102,6 +116,10 @@ fun RegisterScreen(
         checkPasswordMatch()
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.onRegisterSuccess = onRegisterSuccess
+    }
+
     Scaffold(Modifier.semantics {
         testTag = "signup_screen"
     }) { mainPadding ->
@@ -124,7 +142,8 @@ fun RegisterScreen(
                     },
                 isError = FormError.DISPLAY_NAME_FORMAT in formErrors,
                 supportingText = {
-                    val message = formErrors[FormError.DISPLAY_NAME_FORMAT] ?: return@OutlinedTextField
+                    val message = formErrors[FormError.DISPLAY_NAME_FORMAT]
+                        ?: return@OutlinedTextField
                     Text(message, Modifier.testTag("display_name_error_helper"))
                 },
                 label = {
@@ -192,7 +211,8 @@ fun RegisterScreen(
                     },
                 isError = FormError.PASSWORD_MATCHING in formErrors,
                 supportingText = {
-                    val message = formErrors[FormError.PASSWORD_MATCHING] ?: return@OutlinedTextField
+                    val message = formErrors[FormError.PASSWORD_MATCHING]
+                        ?: return@OutlinedTextField
                     Text(message, Modifier.testTag("repeat_password_error_helper"))
                 },
                 label = {
@@ -201,7 +221,9 @@ fun RegisterScreen(
             )
 
             Button(
-                {},
+                {
+                    viewModel.register(username, name, email, password)
+                },
                 Modifier
                     .fillMaxWidth()
                     .semantics {
@@ -233,4 +255,27 @@ fun RegisterScreen(
 @Composable
 private fun PreviewRegisterScreen() = SocialMediaAppTheme(dynamicColor = false) {
     RegisterScreen(onNavigateToLogin = {}, onRegisterSuccess = {})
+}
+
+internal class RegisterViewModel(
+    private val registerUseCase: RegisterUseCase,
+) : ViewModel() {
+
+    private val _state: MutableStateFlow<ScreenState<Unit>> = MutableStateFlow(ScreenState.Idle)
+    val state: StateFlow<ScreenState<Unit>>
+        get() = _state.asStateFlow()
+    lateinit var onRegisterSuccess: () -> Unit
+
+    fun register(username: String, displayName: String, email: String, password: String) {
+        viewModelScope.launch {
+            val result = registerUseCase(username, displayName, email, password)
+            if (result.isFailure) {
+                _state.update { ScreenState.Error(result.error()) }
+                return@launch
+            }
+            _state.update { ScreenState.Success(Unit) }
+            onRegisterSuccess
+        }
+    }
+
 }
