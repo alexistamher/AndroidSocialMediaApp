@@ -1,12 +1,16 @@
-package dev.spooky.socialmediaapp.presentation.screens
+package dev.spooky.socialmediaapp.presentation.screens.register
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -24,31 +28,25 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import dev.spooky.socialmediaapp.core.util.error
-import dev.spooky.socialmediaapp.domain.usecase.auth.RegisterUseCase
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.spooky.socialmediaapp.presentation.FormError
 import dev.spooky.socialmediaapp.presentation.util.ScreenState
 import dev.spooky.socialmediaapp.presentation.util.isEmailValid
 import dev.spooky.socialmediaapp.presentation.util.isPasswordValid
 import dev.spooky.socialmediaapp.ui.theme.SocialMediaAppTheme
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun RegisterScreen(
     onNavigateToLogin: () -> Unit,
     onRegisterSuccess: () -> Unit,
     viewModel: RegisterViewModel = koinInject<RegisterViewModel>(),
 ) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
     var name by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -121,8 +119,28 @@ internal fun RegisterScreen(
     }
 
     Scaffold(Modifier.semantics {
+        testTagsAsResourceId = true
         testTag = "signup_screen"
+    }, snackbarHost = {
+        if (state !is ScreenState.Error) return@Scaffold
+        val error = (state as ScreenState.Error).message
+        ModalBottomSheet(
+            onDismissRequest = viewModel::resetError,
+            Modifier.semantics {
+                testTag = "signup:bottom_sheet"
+            }
+        ) {
+            Text(error)
+        }
     }) { mainPadding ->
+        if (state is ScreenState.Loading) {
+            LinearProgressIndicator(
+                Modifier
+                    .testTag("signup:progress_bar")
+                    .fillMaxWidth()
+                    .systemBarsPadding()
+            )
+        }
         Column(
             Modifier
                 .padding(mainPadding)
@@ -156,7 +174,7 @@ internal fun RegisterScreen(
                 Modifier
                     .fillMaxWidth()
                     .semantics {
-                        testTag = "username_field"
+                        testTag = "signup:username_field"
                     },
                 isError = FormError.USERNAME_FORMAT in formErrors,
                 supportingText = {
@@ -173,7 +191,7 @@ internal fun RegisterScreen(
                 Modifier
                     .fillMaxWidth()
                     .semantics {
-                        testTag = "email_field"
+                        testTag = "signup:email_field"
                     },
                 isError = FormError.EMAIL_FORMAT in formErrors,
                 supportingText = {
@@ -190,7 +208,7 @@ internal fun RegisterScreen(
                 Modifier
                     .fillMaxWidth()
                     .semantics {
-                        testTag = "password_field"
+                        testTag = "signup:password_field"
                     },
                 isError = FormError.PASSWORD_FORMAT in formErrors,
                 supportingText = {
@@ -255,27 +273,4 @@ internal fun RegisterScreen(
 @Composable
 private fun PreviewRegisterScreen() = SocialMediaAppTheme(dynamicColor = false) {
     RegisterScreen(onNavigateToLogin = {}, onRegisterSuccess = {})
-}
-
-internal class RegisterViewModel(
-    private val registerUseCase: RegisterUseCase,
-) : ViewModel() {
-
-    private val _state: MutableStateFlow<ScreenState<Unit>> = MutableStateFlow(ScreenState.Idle)
-    val state: StateFlow<ScreenState<Unit>>
-        get() = _state.asStateFlow()
-    lateinit var onRegisterSuccess: () -> Unit
-
-    fun register(username: String, displayName: String, email: String, password: String) {
-        viewModelScope.launch {
-            val result = registerUseCase(username, displayName, email, password)
-            if (result.isFailure) {
-                _state.update { ScreenState.Error(result.error()) }
-                return@launch
-            }
-            _state.update { ScreenState.Success(Unit) }
-            onRegisterSuccess
-        }
-    }
-
 }

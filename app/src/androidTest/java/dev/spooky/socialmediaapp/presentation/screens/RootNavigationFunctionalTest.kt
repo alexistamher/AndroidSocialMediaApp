@@ -4,6 +4,7 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.performClick
 import dev.spooky.socialmediaapp.presentation.navigation.RootNavigation
+import dev.spooky.socialmediaapp.ui.theme.SocialMediaAppTheme
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -14,7 +15,7 @@ class RootNavigationFunctionalTest {
 
     @Before
     fun startup() {
-        rule.setContent { RootNavigation() }
+        rule.setContent { SocialMediaAppTheme { RootNavigation() } }
     }
 
     @Test

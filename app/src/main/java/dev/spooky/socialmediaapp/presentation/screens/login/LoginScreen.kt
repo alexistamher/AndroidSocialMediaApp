@@ -1,12 +1,14 @@
-package dev.spooky.socialmediaapp.presentation.screens
+package dev.spooky.socialmediaapp.presentation.screens.login
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -29,17 +31,11 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
-import dev.spooky.socialmediaapp.core.util.error
-import dev.spooky.socialmediaapp.domain.usecase.auth.LoginUseCase
 import dev.spooky.socialmediaapp.presentation.FormError
 import dev.spooky.socialmediaapp.presentation.util.ScreenState
 import dev.spooky.socialmediaapp.presentation.util.isEmailValid
 import dev.spooky.socialmediaapp.presentation.util.isPasswordValid
 import dev.spooky.socialmediaapp.ui.theme.SocialMediaAppTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,6 +53,7 @@ internal fun LoginScreen(
 
     LaunchedEffect(Unit) {
         viewModel.onLoginSuccess = onLoginSuccess
+        viewModel.checkSession()
     }
 
     fun onEmailChange(value: String) {
@@ -98,6 +95,14 @@ internal fun LoginScreen(
             Text(error)
         }
     }) { mainPadding ->
+        if (state is ScreenState.Loading) {
+            LinearProgressIndicator(
+                Modifier
+                    .testTag("login:progress_bar")
+                    .fillMaxWidth()
+                    .systemBarsPadding()
+            )
+        }
         Column(
             Modifier
                 .padding(mainPadding)
@@ -149,7 +154,7 @@ internal fun LoginScreen(
                         testTag = "login_button"
                     }
                     .fillMaxWidth(),
-                enabled = formValid,
+                enabled = formValid && state is ScreenState.Idle,
             ) {
                 Text(
                     "Login",
@@ -176,27 +181,3 @@ private fun PreviewLoginScree() = SocialMediaAppTheme(dynamicColor = false) {
     LoginScreen(onNavigateToRegister = {}, onLoginSuccess = {})
 }
 
-internal class LoginViewModel(
-    private val loginUseCase: LoginUseCase
-) : BaseViewModel<ScreenState<Unit>>() {
-    override fun initialState(): ScreenState<Unit> = ScreenState.Idle
-    lateinit var onLoginSuccess: () -> Unit
-
-    fun login(email: String, password: String) {
-        viewModelScope.launch {
-            val result = loginUseCase(email, password)
-            if (result.isFailure) {
-                setState { ScreenState.Error(result.error()) }
-                return@launch
-            }
-            setState { ScreenState.Success(Unit) }
-            withContext(Dispatchers.Main) {
-                onLoginSuccess()
-            }
-        }
-    }
-
-    fun resetError() {
-        setState { ScreenState.Idle }
-    }
-}

@@ -36,7 +36,9 @@ data class UserInfoResponse(
     val displayName: String,
     val email: String,
     @SerialName("created_at")
-    val createdAt: Long,
+    val createdAt: ULong,
     @SerialName("updated_at")
-    val updatedAt: Long,
+    val updatedAt: ULong,
+    @SerialName("avatar_url")
+    val avatarUrl: String?,
 )

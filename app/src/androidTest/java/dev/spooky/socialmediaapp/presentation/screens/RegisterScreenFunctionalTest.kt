@@ -5,6 +5,8 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.performTextInput
+import dev.spooky.socialmediaapp.presentation.screens.register.RegisterScreen
+import dev.spooky.socialmediaapp.ui.theme.SocialMediaAppTheme
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -13,16 +15,22 @@ class RegisterScreenFunctionalTest {
     @get:Rule
     val rule = createComposeRule()
 
-    val usernameField = hasTestTag("username_field")
+    val usernameField = hasTestTag("signup:username_field")
     val displayNameField = hasTestTag("display_name_field")
-    val emailField = hasTestTag("email_field")
-    val passwordField = hasTestTag("password_field")
+    val emailField = hasTestTag("signup:email_field")
+    val passwordField = hasTestTag("signup:password_field")
     val repeatPasswordField = hasTestTag("repeat_password_field")
     val signUpButton = hasTestTag("signup_button")
 
     @Before
     fun startup() {
-        rule.setContent { RegisterScreen(onNavigateToLogin = {}, onRegisterSuccess = {}) }
+        rule.setContent {
+            SocialMediaAppTheme {
+                RegisterScreen(
+                    onNavigateToLogin = {},
+                    onRegisterSuccess = {})
+            }
+        }
     }
 
     @Test

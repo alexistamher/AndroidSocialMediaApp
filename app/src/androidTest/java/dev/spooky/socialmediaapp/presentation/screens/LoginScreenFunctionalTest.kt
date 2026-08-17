@@ -5,6 +5,8 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.performTextInput
+import dev.spooky.socialmediaapp.presentation.screens.login.LoginScreen
+import dev.spooky.socialmediaapp.ui.theme.SocialMediaAppTheme
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -14,15 +16,21 @@ class LoginScreenFunctionalTest {
     @get:Rule
     val rule = createComposeRule()
 
-    val emailField = hasTestTag("email_field")
-    val passwordField = hasTestTag("password_field")
+    val emailField = hasTestTag("login:email_field")
+    val passwordField = hasTestTag("login:password_field")
     val loginButton = hasTestTag("login_button")
     val mailErrorHelper = hasTestTag("email_error_helper")
     val passwordErrorHelper = hasTestTag("password_error_helper")
 
     @Before
     fun startup() {
-        rule.setContent { LoginScreen(onNavigateToRegister = {}, onLoginSuccess = {}) }
+        rule.setContent {
+            SocialMediaAppTheme {
+                LoginScreen(
+                    onNavigateToRegister = {},
+                    onLoginSuccess = {})
+            }
+        }
     }
 
     @Test
@@ -54,7 +62,7 @@ class LoginScreenFunctionalTest {
     }
 
     @Test
-    fun testChekPasswordValidationWorks()  {
+    fun testChekPasswordValidationWorks() {
         rule.onNode(emailField).performTextInput("jperez@mail.com")
         rule.onNode(passwordField).performTextInput("qwerty123")
 

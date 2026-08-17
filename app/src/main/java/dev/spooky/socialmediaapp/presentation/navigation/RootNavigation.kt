@@ -5,9 +5,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import dev.spooky.socialmediaapp.presentation.screens.HomeScreen
-import dev.spooky.socialmediaapp.presentation.screens.LoginScreen
-import dev.spooky.socialmediaapp.presentation.screens.RegisterScreen
+import dev.spooky.socialmediaapp.presentation.screens.register.RegisterScreen
+import dev.spooky.socialmediaapp.presentation.screens.home.HomeScreen
+import dev.spooky.socialmediaapp.presentation.screens.login.LoginScreen
 
 
 @Composable
