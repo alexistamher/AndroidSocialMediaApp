@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
@@ -56,6 +57,7 @@ fun HomeScreen(
     Scaffold(
         Modifier.semantics {
             testTag = "signup_screen"
+            contentDescription = "home screen"
         }
     ) { mainPadding ->
         LazyColumn(

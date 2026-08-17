@@ -23,12 +23,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import dev.spooky.socialmediaapp.core.util.error
@@ -38,11 +37,9 @@ import dev.spooky.socialmediaapp.presentation.util.ScreenState
 import dev.spooky.socialmediaapp.presentation.util.isEmailValid
 import dev.spooky.socialmediaapp.presentation.util.isPasswordValid
 import dev.spooky.socialmediaapp.ui.theme.SocialMediaAppTheme
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,11 +84,17 @@ internal fun LoginScreen(
     }
 
     Scaffold(Modifier.semantics {
+        testTagsAsResourceId = true
         testTag = "signin_screen"
     }, snackbarHost = {
         if (state !is ScreenState.Error) return@Scaffold
         val error = (state as ScreenState.Error).message
-        ModalBottomSheet(onDismissRequest = viewModel::resetError) {
+        ModalBottomSheet(
+            onDismissRequest = viewModel::resetError,
+            Modifier.semantics {
+                testTag = "login_bottom_sheet"
+            }
+        ) {
             Text(error)
         }
     }) { mainPadding ->
@@ -109,8 +112,7 @@ internal fun LoginScreen(
                 email, onValueChange = ::onEmailChange,
                 Modifier
                     .semantics {
-                        contentDescription = "email text field"
-                        testTag = "email_field"
+                        testTag = "login:email_field"
                     }
                     .fillMaxWidth(),
                 label = {
@@ -127,8 +129,7 @@ internal fun LoginScreen(
                 password, onValueChange = ::onPasswordChange,
                 Modifier
                     .semantics {
-                        contentDescription = "password text field"
-                        testTag = "password_field"
+                        testTag = "login:password_field"
                     }
                     .fillMaxWidth(),
                 label = {
@@ -145,7 +146,6 @@ internal fun LoginScreen(
                 ::login,
                 Modifier
                     .semantics {
-                        contentDescription = "signin button"
                         testTag = "login_button"
                     }
                     .fillMaxWidth(),
@@ -158,12 +158,12 @@ internal fun LoginScreen(
                 )
             }
 
-            TextButton(onNavigateToRegister, Modifier
-                .padding(top = 12.dp)
-                .semantics {
-                    contentDescription = "navigate to signup screen"
-                    testTag = "navigate_to_signup_button"
-                }) {
+            TextButton(
+                onNavigateToRegister, Modifier
+                    .padding(top = 12.dp)
+                    .semantics {
+                        testTag = "navigate_to_signup_button"
+                    }) {
                 Text("Don't have an account? Sign up")
             }
         }
@@ -178,25 +178,25 @@ private fun PreviewLoginScree() = SocialMediaAppTheme(dynamicColor = false) {
 
 internal class LoginViewModel(
     private val loginUseCase: LoginUseCase
-) : ViewModel() {
-    private val _state: MutableStateFlow<ScreenState<Unit>> = MutableStateFlow(ScreenState.Idle)
-    val state: StateFlow<ScreenState<Unit>>
-        get() = _state.asStateFlow()
+) : BaseViewModel<ScreenState<Unit>>() {
+    override fun initialState(): ScreenState<Unit> = ScreenState.Idle
     lateinit var onLoginSuccess: () -> Unit
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
             val result = loginUseCase(email, password)
             if (result.isFailure) {
-                _state.update { ScreenState.Error(result.error()) }
+                setState { ScreenState.Error(result.error()) }
                 return@launch
             }
-            _state.update { ScreenState.Success(Unit) }
-            onLoginSuccess()
+            setState { ScreenState.Success(Unit) }
+            withContext(Dispatchers.Main) {
+                onLoginSuccess()
+            }
         }
     }
 
     fun resetError() {
-        _state.update { ScreenState.Idle }
+        setState { ScreenState.Idle }
     }
 }
