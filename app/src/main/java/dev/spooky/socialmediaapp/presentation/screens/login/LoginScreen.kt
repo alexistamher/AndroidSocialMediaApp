@@ -80,27 +80,30 @@ internal fun LoginScreen(
         viewModel.login(email, password)
     }
 
-    Scaffold(Modifier.semantics {
-        testTagsAsResourceId = true
-        testTag = "signin_screen"
-    }, snackbarHost = {
-        if (state !is ScreenState.Error) return@Scaffold
-        val error = (state as ScreenState.Error).message
-        ModalBottomSheet(
-            onDismissRequest = viewModel::resetError,
-            Modifier.semantics {
-                testTag = "login_bottom_sheet"
+    Scaffold(
+        Modifier.semantics {
+            testTagsAsResourceId = true
+            testTag = "signin_screen"
+        },
+        snackbarHost = {
+            if (state !is ScreenState.Error) return@Scaffold
+            val error = (state as ScreenState.Error).message
+            ModalBottomSheet(
+                onDismissRequest = viewModel::resetError,
+                Modifier.semantics {
+                    testTag = "login_bottom_sheet"
+                },
+            ) {
+                Text(error)
             }
-        ) {
-            Text(error)
-        }
-    }) { mainPadding ->
+        },
+    ) { mainPadding ->
         if (state is ScreenState.Loading) {
             LinearProgressIndicator(
                 Modifier
                     .testTag("login:progress_bar")
                     .fillMaxWidth()
-                    .systemBarsPadding()
+                    .systemBarsPadding(),
             )
         }
         Column(
@@ -114,12 +117,12 @@ internal fun LoginScreen(
             Text("Login", style = MaterialTheme.typography.titleLarge)
 
             OutlinedTextField(
-                email, onValueChange = ::onEmailChange,
+                email,
+                onValueChange = ::onEmailChange,
                 Modifier
                     .semantics {
                         testTag = "login:email_field"
-                    }
-                    .fillMaxWidth(),
+                    }.fillMaxWidth(),
                 label = {
                     Text("Email")
                 },
@@ -131,12 +134,12 @@ internal fun LoginScreen(
             )
 
             OutlinedTextField(
-                password, onValueChange = ::onPasswordChange,
+                password,
+                onValueChange = ::onPasswordChange,
                 Modifier
                     .semantics {
                         testTag = "login:password_field"
-                    }
-                    .fillMaxWidth(),
+                    }.fillMaxWidth(),
                 label = {
                     Text("Password")
                 },
@@ -152,8 +155,7 @@ internal fun LoginScreen(
                 Modifier
                     .semantics {
                         testTag = "login_button"
-                    }
-                    .fillMaxWidth(),
+                    }.fillMaxWidth(),
                 enabled = formValid && state is ScreenState.Idle,
             ) {
                 Text(
@@ -164,11 +166,13 @@ internal fun LoginScreen(
             }
 
             TextButton(
-                onNavigateToRegister, Modifier
+                onNavigateToRegister,
+                Modifier
                     .padding(top = 12.dp)
                     .semantics {
                         testTag = "navigate_to_signup_button"
-                    }) {
+                    },
+            ) {
                 Text("Don't have an account? Sign up")
             }
         }
@@ -177,7 +181,7 @@ internal fun LoginScreen(
 
 @Preview(showBackground = true)
 @Composable
-private fun PreviewLoginScree() = SocialMediaAppTheme(dynamicColor = false) {
-    LoginScreen(onNavigateToRegister = {}, onLoginSuccess = {})
-}
-
+private fun PreviewLoginScree() =
+    SocialMediaAppTheme(dynamicColor = false) {
+        LoginScreen(onNavigateToRegister = {}, onLoginSuccess = {})
+    }

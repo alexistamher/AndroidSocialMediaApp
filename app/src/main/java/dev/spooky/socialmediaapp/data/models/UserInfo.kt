@@ -10,4 +10,3 @@ data class UserInfo(
     val photo: String?,
     val createdAt: Long,
 )
-

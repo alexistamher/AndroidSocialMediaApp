@@ -5,5 +5,5 @@ internal enum class FormError {
     EMAIL_FORMAT,
     DISPLAY_NAME_FORMAT,
     USERNAME_FORMAT,
-    PASSWORD_MATCHING;
+    PASSWORD_MATCHING,
 }

@@ -9,6 +9,4 @@ data class AuthData(
     val refreshToken: String,
 )
 
-fun AuthData.toDomain(): DomainAuthData {
-    return DomainAuthData(accessToken, refreshToken)
-}
+fun AuthData.toDomain(): DomainAuthData = DomainAuthData(accessToken, refreshToken)

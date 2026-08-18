@@ -10,5 +10,5 @@ sealed interface Screen {
     data object Register : Screen
 
     @Serializable
-    data object Home: Screen
+    data object Home : Screen
 }

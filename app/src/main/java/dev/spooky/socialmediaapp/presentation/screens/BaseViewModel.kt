@@ -17,10 +17,10 @@ internal abstract class BaseViewModel<T> : ViewModel() {
     protected val currentState: T
         get() = _state.value
 
-
     protected abstract fun initialState(): T
 
-    protected fun setState(state: (T) -> T) = viewModelScope.launch(Dispatchers.Main) {
-        _state.update { state.invoke(currentState) }
-    }
+    protected fun setState(state: (T) -> T) =
+        viewModelScope.launch(Dispatchers.Main) {
+            _state.update { state.invoke(currentState) }
+        }
 }

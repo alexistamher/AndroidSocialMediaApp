@@ -15,22 +15,22 @@ class O1RegisterScreenAutomatedTest {
     val navigateToSignupButtonTag = "navigate_to_signup_button"
 
     @Test
-    fun should_register_a_new_user() = uiAutomator {
-        startApp("dev.spooky.socialmediaapp")
+    fun should_register_a_new_user() =
+        uiAutomator {
+            startApp("dev.spooky.socialmediaapp")
 
-        device.findObject(By.res(navigateToSignupButtonTag)).click()
+            device.findObject(By.res(navigateToSignupButtonTag)).click()
 
-        onElement { viewIdResourceName == usernameTag }.waitForStable()
+            onElement { viewIdResourceName == usernameTag }.waitForStable()
 
-        device.findObject(By.res(usernameTag)).text = "JConnor92"
-        device.findObject(By.res(displayNameTag)).text = "John Connor"
-        device.findObject(By.res(emailTag)).text = "jconnor@mail.com"
-        device.findObject(By.res(passwordTag)).text = "Qwerty123"
-        device.findObject(By.res(repeatPasswordTag)).text = "Qwerty123"
+            device.findObject(By.res(usernameTag)).text = "JConnor92"
+            device.findObject(By.res(displayNameTag)).text = "John Connor"
+            device.findObject(By.res(emailTag)).text = "jconnor@mail.com"
+            device.findObject(By.res(passwordTag)).text = "Qwerty123"
+            device.findObject(By.res(repeatPasswordTag)).text = "Qwerty123"
 
-        device.findObject(By.res(signUpButtonTag)).click()
+            device.findObject(By.res(signUpButtonTag)).click()
 
-        onElement { viewIdResourceName == "home_screen" }.waitForStable()
-
-    }
+            onElement { viewIdResourceName == "home_screen" }.waitForStable()
+        }
 }

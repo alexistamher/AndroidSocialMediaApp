@@ -10,11 +10,16 @@ import kotlinx.coroutines.launch
 internal class RegisterViewModel(
     private val registerUseCase: RegisterUseCase,
 ) : BaseViewModel<ScreenState<Unit>>() {
-
     override fun initialState() = ScreenState.Idle
+
     lateinit var onRegisterSuccess: () -> Unit
 
-    fun register(username: String, displayName: String, email: String, password: String) {
+    fun register(
+        username: String,
+        displayName: String,
+        email: String,
+        password: String,
+    ) {
         setState { ScreenState.Loading }
         viewModelScope.launch {
             val result = registerUseCase(username, displayName, email, password)
@@ -30,5 +35,4 @@ internal class RegisterViewModel(
     fun resetError() {
         setState { ScreenState.Idle }
     }
-
 }

@@ -55,7 +55,8 @@ internal fun RegisterScreen(
     var formErrors by remember { mutableStateOf(emptyMap<FormError, String>()) }
     val formValid by remember {
         derivedStateOf {
-            formErrors.isEmpty() && name.isNotEmpty() && username.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty() && repeatPassword.isNotEmpty()
+            formErrors.isEmpty() && name.isNotEmpty() && username.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty() &&
+                repeatPassword.isNotEmpty()
         }
     }
 
@@ -118,27 +119,30 @@ internal fun RegisterScreen(
         viewModel.onRegisterSuccess = onRegisterSuccess
     }
 
-    Scaffold(Modifier.semantics {
-        testTagsAsResourceId = true
-        testTag = "signup_screen"
-    }, snackbarHost = {
-        if (state !is ScreenState.Error) return@Scaffold
-        val error = (state as ScreenState.Error).message
-        ModalBottomSheet(
-            onDismissRequest = viewModel::resetError,
-            Modifier.semantics {
-                testTag = "signup:bottom_sheet"
+    Scaffold(
+        Modifier.semantics {
+            testTagsAsResourceId = true
+            testTag = "signup_screen"
+        },
+        snackbarHost = {
+            if (state !is ScreenState.Error) return@Scaffold
+            val error = (state as ScreenState.Error).message
+            ModalBottomSheet(
+                onDismissRequest = viewModel::resetError,
+                Modifier.semantics {
+                    testTag = "signup:bottom_sheet"
+                },
+            ) {
+                Text(error)
             }
-        ) {
-            Text(error)
-        }
-    }) { mainPadding ->
+        },
+    ) { mainPadding ->
         if (state is ScreenState.Loading) {
             LinearProgressIndicator(
                 Modifier
                     .testTag("signup:progress_bar")
                     .fillMaxWidth()
-                    .systemBarsPadding()
+                    .systemBarsPadding(),
             )
         }
         Column(
@@ -152,7 +156,8 @@ internal fun RegisterScreen(
             Text("Register", style = MaterialTheme.typography.titleLarge)
 
             OutlinedTextField(
-                name, onValueChange = ::onDisplayNameChange,
+                name,
+                onValueChange = ::onDisplayNameChange,
                 Modifier
                     .fillMaxWidth()
                     .semantics {
@@ -160,8 +165,9 @@ internal fun RegisterScreen(
                     },
                 isError = FormError.DISPLAY_NAME_FORMAT in formErrors,
                 supportingText = {
-                    val message = formErrors[FormError.DISPLAY_NAME_FORMAT]
-                        ?: return@OutlinedTextField
+                    val message =
+                        formErrors[FormError.DISPLAY_NAME_FORMAT]
+                            ?: return@OutlinedTextField
                     Text(message, Modifier.testTag("display_name_error_helper"))
                 },
                 label = {
@@ -170,7 +176,8 @@ internal fun RegisterScreen(
             )
 
             OutlinedTextField(
-                username, onValueChange = ::onUsernameChange,
+                username,
+                onValueChange = ::onUsernameChange,
                 Modifier
                     .fillMaxWidth()
                     .semantics {
@@ -187,7 +194,8 @@ internal fun RegisterScreen(
             )
 
             OutlinedTextField(
-                email, onValueChange = ::onEmailChange,
+                email,
+                onValueChange = ::onEmailChange,
                 Modifier
                     .fillMaxWidth()
                     .semantics {
@@ -204,7 +212,8 @@ internal fun RegisterScreen(
             )
 
             OutlinedTextField(
-                password, onValueChange = ::onPasswordChange,
+                password,
+                onValueChange = ::onPasswordChange,
                 Modifier
                     .fillMaxWidth()
                     .semantics {
@@ -221,7 +230,8 @@ internal fun RegisterScreen(
             )
 
             OutlinedTextField(
-                repeatPassword, onValueChange = ::onRepeatPasswordChange,
+                repeatPassword,
+                onValueChange = ::onRepeatPasswordChange,
                 Modifier
                     .fillMaxWidth()
                     .semantics {
@@ -229,8 +239,9 @@ internal fun RegisterScreen(
                     },
                 isError = FormError.PASSWORD_MATCHING in formErrors,
                 supportingText = {
-                    val message = formErrors[FormError.PASSWORD_MATCHING]
-                        ?: return@OutlinedTextField
+                    val message =
+                        formErrors[FormError.PASSWORD_MATCHING]
+                            ?: return@OutlinedTextField
                     Text(message, Modifier.testTag("repeat_password_error_helper"))
                 },
                 label = {
@@ -250,7 +261,8 @@ internal fun RegisterScreen(
                 enabled = formValid,
             ) {
                 Text(
-                    "Register", Modifier.padding(12.dp)
+                    "Register",
+                    Modifier.padding(12.dp),
                 )
             }
 
@@ -271,6 +283,7 @@ internal fun RegisterScreen(
 
 @Preview
 @Composable
-private fun PreviewRegisterScreen() = SocialMediaAppTheme(dynamicColor = false) {
-    RegisterScreen(onNavigateToLogin = {}, onRegisterSuccess = {})
-}
+private fun PreviewRegisterScreen() =
+    SocialMediaAppTheme(dynamicColor = false) {
+        RegisterScreen(onNavigateToLogin = {}, onRegisterSuccess = {})
+    }

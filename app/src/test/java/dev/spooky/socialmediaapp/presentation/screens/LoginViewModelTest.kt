@@ -56,71 +56,82 @@ class LoginViewModelTest : AutoCloseKoinTest() {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `should login successfully`() = runBlocking {
-        val client = MockEngine.create {
-            dispatcher = testDispatcher
-            addHandler { request ->
-                val relativeUrl = request.url.encodedPath
-                when (relativeUrl) {
-                    "/api/auth/login" -> {
-                        val mockAuth = mockk<DomainAuthData>()
-                        coEvery { mockAuth getProperty "accessToken" } returns "token"
-                        coEvery { sessionHelper.getAuth() } returns mockAuth
-                        respond(
-                            content = Json.encodeToString(AuthResponse("token", "token")),
-                            HttpStatusCode.OK,
-                            headers = headersOf(HttpHeaders.ContentType, "application/json")
-                        )
-                    }
+    fun `should login successfully`() =
+        runBlocking {
+            val client =
+                MockEngine
+                    .create {
+                        dispatcher = testDispatcher
+                        addHandler { request ->
+                            val relativeUrl = request.url.encodedPath
+                            when (relativeUrl) {
+                                "/api/auth/login" -> {
+                                    val mockAuth = mockk<DomainAuthData>()
+                                    coEvery { mockAuth getProperty "accessToken" } returns "token"
+                                    coEvery { sessionHelper.getAuth() } returns mockAuth
+                                    respond(
+                                        content = Json.encodeToString(AuthResponse("token", "token")),
+                                        HttpStatusCode.OK,
+                                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                                    )
+                                }
 
-                    else -> respond(
-                        content = Json.encodeToString(UserInfoResponse.empty()),
-                        HttpStatusCode.OK,
-                        headers = headersOf(HttpHeaders.ContentType, "application/json")
-                    )
-                }
-            }
-        }.run { httpClient(this) }
-        val repo = AuthRepositoryImpl(client, "http://demo/api", sessionHelper)
-        val spyRepo = spyk(repo)
-        val useCase = LoginUseCase(spyRepo)
-        val viewModel = LoginViewModel(useCase, sessionHelper)
-        viewModel.onLoginSuccess = {}
-        val spyViewModel = spyk(viewModel)
+                                else -> {
+                                    respond(
+                                        content = Json.encodeToString(UserInfoResponse.empty()),
+                                        HttpStatusCode.OK,
+                                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                                    )
+                                }
+                            }
+                        }
+                    }.run { httpClient(this) }
+            val repo = AuthRepositoryImpl(client, "http://demo/api", sessionHelper)
+            val spyRepo = spyk(repo)
+            val useCase = LoginUseCase(spyRepo)
+            val viewModel = LoginViewModel(useCase, sessionHelper)
+            viewModel.onLoginSuccess = {}
+            val spyViewModel = spyk(viewModel)
 
-        assertEquals(ScreenState.Idle, viewModel.state.value)
+            assertEquals(ScreenState.Idle, viewModel.state.value)
 
-        spyViewModel.login("sample@mail.com", "sample")
+            spyViewModel.login("sample@mail.com", "sample")
 
-        coVerify { spyRepo.login(any(), any()) }
-        coVerify { spyRepo.getInfo() }
-        assertEquals(ScreenState.Success(Unit), viewModel.state.value)
-        coVerify { spyViewModel.onLoginSuccess }
-    }
+            coVerify { spyRepo.login(any(), any()) }
+            coVerify { spyRepo.getInfo() }
+            assertEquals(ScreenState.Success(Unit), viewModel.state.value)
+            coVerify { spyViewModel.onLoginSuccess }
+        }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `should fail on login and set viewmodel state to error`() =
         runBlocking {
-            val client = MockEngine.create {
-                dispatcher = testDispatcher
-                addHandler { request ->
-                    val relativeUrl = request.url.encodedPath
-                    when (relativeUrl) {
-                        "/api/auth/login" -> respond(
-                            content = ByteReadChannel("""something went wrong"""),
-                            HttpStatusCode.BadRequest,
-                            headers = headersOf(HttpHeaders.ContentType, "application/json")
-                        )
+            val client =
+                MockEngine
+                    .create {
+                        dispatcher = testDispatcher
+                        addHandler { request ->
+                            val relativeUrl = request.url.encodedPath
+                            when (relativeUrl) {
+                                "/api/auth/login" -> {
+                                    respond(
+                                        content = ByteReadChannel("""something went wrong"""),
+                                        HttpStatusCode.BadRequest,
+                                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                                    )
+                                }
 
-                        else -> respond(
-                            content = Json.encodeToString(UserInfoResponse.empty()),
-                            HttpStatusCode.OK,
-                            headers = headersOf(HttpHeaders.ContentType, "application/json")
-                        )
-                    }
-                }
-            }.run { httpClient(this) }
+                                else -> {
+                                    respond(
+                                        content = Json.encodeToString(UserInfoResponse.empty()),
+                                        HttpStatusCode.OK,
+                                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                                    )
+                                }
+                            }
+                        }
+                    }.run { httpClient(this) }
             val repo = AuthRepositoryImpl(client, "http://demo/api", sessionHelper)
             val spyRepo = spyk(repo)
             val useCase = LoginUseCase(spyRepo)
@@ -145,27 +156,31 @@ class LoginViewModelTest : AutoCloseKoinTest() {
             val mockAuth = mockk<DomainAuthData>()
             coEvery { mockAuth getProperty "accessToken" } returns "token"
             coEvery { sessionHelper.getAuth() } returns mockAuth
-            val client = MockEngine.create {
-                dispatcher = testDispatcher
-                addHandler { request ->
-                    val relativeUrl = request.url.encodedPath
-                    when (relativeUrl) {
-                        "/api/auth/login" -> {
-                            respond(
-                                content = Json.encodeToString(AuthResponse("token", "token")),
-                                HttpStatusCode.OK,
-                                headers = headersOf(HttpHeaders.ContentType, "application/json")
-                            )
-                        }
+            val client =
+                MockEngine
+                    .create {
+                        dispatcher = testDispatcher
+                        addHandler { request ->
+                            val relativeUrl = request.url.encodedPath
+                            when (relativeUrl) {
+                                "/api/auth/login" -> {
+                                    respond(
+                                        content = Json.encodeToString(AuthResponse("token", "token")),
+                                        HttpStatusCode.OK,
+                                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                                    )
+                                }
 
-                        else -> respond(
-                            content = ByteReadChannel("something went wrong"),
-                            HttpStatusCode.BadRequest,
-                            headers = headersOf(HttpHeaders.ContentType, "application/json")
-                        )
-                    }
-                }
-            }.run { httpClient(this) }
+                                else -> {
+                                    respond(
+                                        content = ByteReadChannel("something went wrong"),
+                                        HttpStatusCode.BadRequest,
+                                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                                    )
+                                }
+                            }
+                        }
+                    }.run { httpClient(this) }
             val repo = AuthRepositoryImpl(client, "http://demo/api", sessionHelper)
             val spyRepo = spyk(repo)
             val useCase = LoginUseCase(spyRepo)

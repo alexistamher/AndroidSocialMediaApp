@@ -4,6 +4,5 @@ data class UserInfo(
     val id: String,
     val displayName: String,
     val email: String,
-    val photo: String?
+    val photo: String?,
 )
-

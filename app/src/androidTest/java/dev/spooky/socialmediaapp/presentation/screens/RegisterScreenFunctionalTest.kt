@@ -28,7 +28,8 @@ class RegisterScreenFunctionalTest {
             SocialMediaAppTheme {
                 RegisterScreen(
                     onNavigateToLogin = {},
-                    onRegisterSuccess = {})
+                    onRegisterSuccess = {},
+                )
             }
         }
     }

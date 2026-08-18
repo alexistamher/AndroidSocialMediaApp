@@ -10,9 +10,10 @@ import kotlinx.coroutines.launch
 
 internal class LoginViewModel(
     private val loginUseCase: LoginUseCase,
-    private val sessionHelper: SessionHelper
+    private val sessionHelper: SessionHelper,
 ) : BaseViewModel<ScreenState<Unit>>() {
     override fun initialState(): ScreenState<Unit> = ScreenState.Idle
+
     lateinit var onLoginSuccess: () -> Unit
 
     fun checkSession() {
@@ -23,7 +24,10 @@ internal class LoginViewModel(
         }
     }
 
-    fun login(email: String, password: String) {
+    fun login(
+        email: String,
+        password: String,
+    ) {
         setState { ScreenState.Loading }
         viewModelScope.launch {
             val result = loginUseCase(email, password)

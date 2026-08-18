@@ -5,17 +5,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import dev.spooky.socialmediaapp.presentation.screens.register.RegisterScreen
 import dev.spooky.socialmediaapp.presentation.screens.home.HomeScreen
 import dev.spooky.socialmediaapp.presentation.screens.login.LoginScreen
-
+import dev.spooky.socialmediaapp.presentation.screens.register.RegisterScreen
 
 @Composable
 fun RootNavigation() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = Screen.Login
+        startDestination = Screen.Login,
     ) {
         composable<Screen.Login> {
             LoginScreen(
@@ -26,7 +25,7 @@ fun RootNavigation() {
                     navController.navigate(Screen.Home) {
                         popUpTo(Screen.Login) { inclusive = true }
                     }
-                }
+                },
             )
         }
         composable<Screen.Register> {
@@ -38,7 +37,7 @@ fun RootNavigation() {
                     navController.navigate(Screen.Home) {
                         popUpTo(Screen.Login) { inclusive = true }
                     }
-                }
+                },
             )
         }
         composable<Screen.Home> { backStackEntry ->
@@ -48,7 +47,7 @@ fun RootNavigation() {
                     navController.navigate(Screen.Login) {
                         popUpTo(Screen.Home) { inclusive = true }
                     }
-                }
+                },
             )
         }
     }

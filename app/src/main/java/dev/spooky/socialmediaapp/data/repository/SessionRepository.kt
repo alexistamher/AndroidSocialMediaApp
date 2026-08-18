@@ -11,9 +11,8 @@ import kotlinx.serialization.json.Json
 class SessionRepository(
     private val authKey: Preferences.Key<String>,
     private val userInfoKey: Preferences.Key<String>,
-    private val preferences: DataStore<Preferences>
+    private val preferences: DataStore<Preferences>,
 ) {
-
     suspend fun setUserInfoPreferences(info: UserInfo) {
         preferences.edit { prefs ->
             prefs[userInfoKey] = Json.encodeToString(info)

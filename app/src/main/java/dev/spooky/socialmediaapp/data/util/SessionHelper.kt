@@ -11,16 +11,15 @@ import dev.spooky.socialmediaapp.domain.models.AuthData as DomainAuthData
 import dev.spooky.socialmediaapp.domain.models.UserInfo as DomainUserInfo
 
 class SessionHelper(
-    private val repository: SessionRepository
+    private val repository: SessionRepository,
 ) {
     private var _userInfo: UserInfo? = null
     private var _authData: AuthData? = null
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal val _isAuthorized: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    fun isAuthorized(): Boolean {
-        return _isAuthorized.value
-    }
+
+    fun isAuthorized(): Boolean = _isAuthorized.value
 
     suspend fun getUserInfo(): DomainUserInfo? {
         if (!_isAuthorized.value) return null
@@ -36,7 +35,8 @@ class SessionHelper(
         if (_authData != null) {
             return _authData?.toDomain()
         }
-        return repository.getAuthDataPreferences()
+        return repository
+            .getAuthDataPreferences()
             ?.toDomain()
     }
 

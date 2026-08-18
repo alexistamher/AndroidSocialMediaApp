@@ -51,25 +51,31 @@ class RegisterViewModelTest {
 
     @Test
     fun `should register successfully`() {
-        val client = MockEngine.create {
-            dispatcher = testDispatcher
-            addHandler { request ->
-                val relativeUrl = request.url.encodedPath
-                when (relativeUrl) {
-                    "/api/auth/register" -> respond(
-                        content = Json.encodeToString(AuthResponse("token", "token")),
-                        HttpStatusCode.Created,
-                        headers = headersOf(HttpHeaders.ContentType, "application/json")
-                    )
+        val client =
+            MockEngine
+                .create {
+                    dispatcher = testDispatcher
+                    addHandler { request ->
+                        val relativeUrl = request.url.encodedPath
+                        when (relativeUrl) {
+                            "/api/auth/register" -> {
+                                respond(
+                                    content = Json.encodeToString(AuthResponse("token", "token")),
+                                    HttpStatusCode.Created,
+                                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                                )
+                            }
 
-                    else -> respond(
-                        content = Json.encodeToString(UserInfoResponse.empty()),
-                        HttpStatusCode.OK,
-                        headers = headersOf(HttpHeaders.ContentType, "application/json")
-                    )
-                }
-            }
-        }.run { httpClient(this) }
+                            else -> {
+                                respond(
+                                    content = Json.encodeToString(UserInfoResponse.empty()),
+                                    HttpStatusCode.OK,
+                                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                                )
+                            }
+                        }
+                    }
+                }.run { httpClient(this) }
         val spyRepo = spyk(AuthRepositoryImpl(client, "http://demo/api", sessionHelper))
         val useCase = RegisterUseCase(spyRepo)
         val viewModel = RegisterViewModel(useCase)
@@ -88,27 +94,34 @@ class RegisterViewModelTest {
 
     @Test
     fun `should fail on register and set viewmodel state to error`() {
-        val client = MockEngine.create {
-            dispatcher = testDispatcher
-            addHandler { request ->
-                val relativeUrl = request.url.encodedPath
-                when (relativeUrl) {
-                    "/api/auth/register" -> respond(
-                        content = ByteReadChannel("something went wrong"),
-                        HttpStatusCode.BadRequest,
-                        headers = headersOf(HttpHeaders.ContentType, "application/json")
-                    )
+        val client =
+            MockEngine
+                .create {
+                    dispatcher = testDispatcher
+                    addHandler { request ->
+                        val relativeUrl = request.url.encodedPath
+                        when (relativeUrl) {
+                            "/api/auth/register" -> {
+                                respond(
+                                    content = ByteReadChannel("something went wrong"),
+                                    HttpStatusCode.BadRequest,
+                                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                                )
+                            }
 
-                    else -> respond(
-                        content = Json.encodeToString(
-                            UserInfoResponse.empty()
-                        ),
-                        HttpStatusCode.OK,
-                        headers = headersOf(HttpHeaders.ContentType, "application/json")
-                    )
-                }
-            }
-        }.run { httpClient(this) }
+                            else -> {
+                                respond(
+                                    content =
+                                        Json.encodeToString(
+                                            UserInfoResponse.empty(),
+                                        ),
+                                    HttpStatusCode.OK,
+                                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                                )
+                            }
+                        }
+                    }
+                }.run { httpClient(this) }
 
         val mockSessionHelper = mockk<SessionHelper>()
         val repo = AuthRepositoryImpl(client, "http://demo/api", mockSessionHelper)
@@ -128,28 +141,33 @@ class RegisterViewModelTest {
         coVerify(exactly = 0) { spyViewModel.onRegisterSuccess }
     }
 
-
     @Test
     fun `should fail on getting user info and set viewmodel state to error`() {
-        val client = MockEngine.create {
-            dispatcher = testDispatcher
-            addHandler { request ->
-                val relativeUrl = request.url.encodedPath
-                when (relativeUrl) {
-                    "/api/auth/register" -> respond(
-                        content = Json.encodeToString(AuthResponse("token", "token")),
-                        HttpStatusCode.Created,
-                        headers = headersOf(HttpHeaders.ContentType, "application/json")
-                    )
+        val client =
+            MockEngine
+                .create {
+                    dispatcher = testDispatcher
+                    addHandler { request ->
+                        val relativeUrl = request.url.encodedPath
+                        when (relativeUrl) {
+                            "/api/auth/register" -> {
+                                respond(
+                                    content = Json.encodeToString(AuthResponse("token", "token")),
+                                    HttpStatusCode.Created,
+                                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                                )
+                            }
 
-                    else -> respond(
-                        content = ByteReadChannel("something went wrong"),
-                        HttpStatusCode.BadRequest,
-                        headers = headersOf(HttpHeaders.ContentType, "application/json")
-                    )
-                }
-            }
-        }.run { httpClient(this) }
+                            else -> {
+                                respond(
+                                    content = ByteReadChannel("something went wrong"),
+                                    HttpStatusCode.BadRequest,
+                                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                                )
+                            }
+                        }
+                    }
+                }.run { httpClient(this) }
 
         val repo = AuthRepositoryImpl(client, "http://demo/api", sessionHelper)
         val spyRepo = spyk(repo)

@@ -6,22 +6,22 @@ import androidx.test.uiautomator.waitForStable
 import org.junit.Test
 
 class O2LoginScreenAutomatedTest {
-
     private val usernameTag = "login:email_field"
 
     @Test
-    fun should_login_successfully() = uiAutomator {
-        startApp("dev.spooky.socialmediaapp")
+    fun should_login_successfully() =
+        uiAutomator {
+            startApp("dev.spooky.socialmediaapp")
 
-        onElement { viewIdResourceName == usernameTag }.waitForStable()
-        val emailField = device.findObject(By.res(usernameTag))
-        emailField.text = "jconnor@mail.com"
+            onElement { viewIdResourceName == usernameTag }.waitForStable()
+            val emailField = device.findObject(By.res(usernameTag))
+            emailField.text = "jconnor@mail.com"
 
-        val passwordField = device.findObject(By.res("login:password_field"))
-        passwordField.text = "Qwerty123"
+            val passwordField = device.findObject(By.res("login:password_field"))
+            passwordField.text = "Qwerty123"
 
-        device.findObject(By.res("login_button")).click()
+            device.findObject(By.res("login_button")).click()
 
-        onElement { viewIdResourceName == "home_screen" }.waitForStable()
-    }
+            onElement { viewIdResourceName == "home_screen" }.waitForStable()
+        }
 }

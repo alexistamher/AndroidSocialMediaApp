@@ -38,28 +38,27 @@ import dev.spooky.socialmediaapp.presentation.models.PostPreview
 import kotlin.random.Random
 
 @Composable
-fun HomeScreen(
-    onLogout: () -> Unit,
-) {
-    val posts = MutableList(20) {
-        val wordsSize = Random.nextInt(40) + 10
-        val content = LoremIpsum(words = wordsSize).values.joinToString()
-        val commentsSize = Random.nextInt(5)
-        PostPreview(
-            it.toString(),
-            content,
-            Author("$it-$it", "test user $it", "TestUser$it", null),
-            commentsSize,
-            emptyMap(),
-            "public",
-            0L,
-        )
-    }
+fun HomeScreen(onLogout: () -> Unit) {
+    val posts =
+        MutableList(20) {
+            val wordsSize = Random.nextInt(40) + 10
+            val content = LoremIpsum(words = wordsSize).values.joinToString()
+            val commentsSize = Random.nextInt(5)
+            PostPreview(
+                it.toString(),
+                content,
+                Author("$it-$it", "test user $it", "TestUser$it", null),
+                commentsSize,
+                emptyMap(),
+                "public",
+                0L,
+            )
+        }
     Scaffold(
         Modifier.semantics {
             testTagsAsResourceId = true
             testTag = "home_screen"
-        }
+        },
     ) { mainPadding ->
         LazyColumn(
             Modifier
@@ -118,9 +117,14 @@ private fun PostPreviewItem(post: PostPreview) {
                 Text(post.author.displayName)
                 Text("@${post.author.username}", Modifier.weight(1f))
                 Text("2h")
-                FilledTonalIconButton({}, Modifier.size(28.dp), colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                )) {
+                FilledTonalIconButton(
+                    {},
+                    Modifier.size(28.dp),
+                    colors =
+                        IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                        ),
+                ) {
                     Icon(Icons.Default.MoreHoriz, null)
                 }
             }
@@ -130,13 +134,15 @@ private fun PostPreviewItem(post: PostPreview) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Icon(Icons.Outlined.FavoriteBorder, null)
                     Text(post.previewReactions.size.toString())
                 }
                 Row(
-                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Icon(Icons.Outlined.ModeComment, null)
                     Text(post.previewReactions.size.toString())
@@ -150,22 +156,24 @@ private fun PostPreviewItem(post: PostPreview) {
 @Preview(showBackground = true)
 private fun PreviewPostPreviewItem() {
     val content = LoremIpsum(words = 30).values.joinToString()
-    val post = PostPreview(
-        "test-post-id", content,
-        Author(
-            "test-author-test",
-            "test user",
-            "TestUser",
-            null,
-        ),
-        0,
-        mapOf(
-            "like" to 3,
-            "haha" to 2,
-            "angry" to 1,
-        ),
-        "public", 0L,
-    )
+    val post =
+        PostPreview(
+            "test-post-id",
+            content,
+            Author(
+                "test-author-test",
+                "test user",
+                "TestUser",
+                null,
+            ),
+            0,
+            mapOf(
+                "like" to 3,
+                "haha" to 2,
+                "angry" to 1,
+            ),
+            "public",
+            0L,
+        )
     PostPreviewItem(post)
 }
-

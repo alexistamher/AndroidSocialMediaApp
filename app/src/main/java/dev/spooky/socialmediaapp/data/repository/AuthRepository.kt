@@ -22,13 +22,16 @@ class AuthRepositoryImpl(
     private val baseUrl: String,
     private val sessionHelper: SessionHelper,
 ) : AuthRepository {
-
-    override suspend fun login(email: String, password: String): Result<Unit> {
+    override suspend fun login(
+        email: String,
+        password: String,
+    ): Result<Unit> {
         val body = AuthRequest(email, password)
-        val response = http.request("$baseUrl/auth/login") {
-            method = HttpMethod.Post
-            setBody(body)
-        }
+        val response =
+            http.request("$baseUrl/auth/login") {
+                method = HttpMethod.Post
+                setBody(body)
+            }
         if (response.status != HttpStatusCode.OK) {
             return Result.failure(Throwable("invalid credentials"))
         }
@@ -39,10 +42,11 @@ class AuthRepositoryImpl(
 
     override suspend fun getInfo(): Result<Unit> {
         val auth = sessionHelper.getAuth() ?: return Result.failure(Throwable("unauthorized"))
-        val response = http.request("$baseUrl/auth/info") {
-            method = HttpMethod.Get
-            bearerAuth(auth.accessToken)
-        }
+        val response =
+            http.request("$baseUrl/auth/info") {
+                method = HttpMethod.Get
+                bearerAuth(auth.accessToken)
+            }
         if (response.status == HttpStatusCode.OK) {
             val body = response.body<UserInfoResponse>()
             val info = body.run { UserInfo(id, displayName, email, null, body.createdAt.toLong()) }
@@ -56,13 +60,14 @@ class AuthRepositoryImpl(
         username: String,
         displayName: String,
         email: String,
-        password: String
+        password: String,
     ): Result<Unit> {
         val body = RegisterRequest(username, displayName, email, password)
-        val response = http.request("$baseUrl/auth/register") {
-            method = HttpMethod.Post
-            setBody(body)
-        }
+        val response =
+            http.request("$baseUrl/auth/register") {
+                method = HttpMethod.Post
+                setBody(body)
+            }
         if (response.status != HttpStatusCode.Created) {
             return Result.failure(Throwable("error on register attempting"))
         }

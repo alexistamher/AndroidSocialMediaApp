@@ -28,7 +28,8 @@ class LoginScreenFunctionalTest {
             SocialMediaAppTheme {
                 LoginScreen(
                     onNavigateToRegister = {},
-                    onLoginSuccess = {})
+                    onLoginSuccess = {},
+                )
             }
         }
     }
@@ -46,20 +47,20 @@ class LoginScreenFunctionalTest {
         rule.onNode(loginButton).assertIsEnabled()
     }
 
-
     @Test
-    fun testCheckEmailValidationWorks() = runTest {
-        rule.onNode(emailField).performTextInput("jperez")
-        rule.onNode(passwordField).performTextInput("Qwerty123")
+    fun testCheckEmailValidationWorks() =
+        runTest {
+            rule.onNode(emailField).performTextInput("jperez")
+            rule.onNode(passwordField).performTextInput("Qwerty123")
 
-        rule.onNode(mailErrorHelper, useUnmergedTree = true).assertExists()
-        rule.onNode(loginButton).assertIsNotEnabled()
+            rule.onNode(mailErrorHelper, useUnmergedTree = true).assertExists()
+            rule.onNode(loginButton).assertIsNotEnabled()
 
-        rule.onNode(emailField).performTextInput("@mail.com")
+            rule.onNode(emailField).performTextInput("@mail.com")
 
-        rule.onNode(mailErrorHelper, useUnmergedTree = true).assertDoesNotExist()
-        rule.onNode(loginButton).assertIsEnabled()
-    }
+            rule.onNode(mailErrorHelper, useUnmergedTree = true).assertDoesNotExist()
+            rule.onNode(loginButton).assertIsEnabled()
+        }
 
     @Test
     fun testChekPasswordValidationWorks() {

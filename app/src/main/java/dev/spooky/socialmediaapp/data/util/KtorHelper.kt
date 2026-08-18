@@ -12,32 +12,32 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-fun <T : HttpClientEngineConfig> httpClient(engine: HttpClientEngineFactory<T>): HttpClient {
-    return HttpClient(engine) {
+fun <T : HttpClientEngineConfig> httpClient(engine: HttpClientEngineFactory<T>): HttpClient =
+    HttpClient(engine) {
         install(ContentNegotiation) {
             json(
-                json = Json {
-                    ignoreUnknownKeys = true
-                }
+                json =
+                    Json {
+                        ignoreUnknownKeys = true
+                    },
             )
         }
         defaultRequest {
             contentType(ContentType.Application.Json)
         }
     }
-}
 
-fun httpClient(engine: HttpClientEngine): HttpClient {
-    return HttpClient(engine) {
+fun httpClient(engine: HttpClientEngine): HttpClient =
+    HttpClient(engine) {
         install(ContentNegotiation) {
             json(
-                json = Json {
-                    ignoreUnknownKeys = true
-                }
+                json =
+                    Json {
+                        ignoreUnknownKeys = true
+                    },
             )
         }
         defaultRequest {
             contentType(ContentType.Application.Json)
         }
     }
-}
