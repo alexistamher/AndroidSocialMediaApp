@@ -40,15 +40,21 @@ fun RootNavigation() {
                 },
             )
         }
-        composable<Screen.Home> { backStackEntry ->
-            val args = backStackEntry.toRoute<Screen.Home>()
+        composable<Screen.Home> {
             HomeScreen(
                 onLogout = {
                     navController.navigate(Screen.Login) {
                         popUpTo(Screen.Home) { inclusive = true }
                     }
                 },
+                onPostPressed = { postId ->
+                    navController.navigate(Screen.PostDetail(postId = postId))
+                },
             )
+        }
+        composable<Screen.PostDetail> { backStackEntry ->
+            val postDetail = backStackEntry.toRoute<Screen.PostDetail>()
+            // TODO: Conectar PostDetailScreen(postId = postDetail.postId, onNavigateBack = { navController.popBackStack() })
         }
     }
 }

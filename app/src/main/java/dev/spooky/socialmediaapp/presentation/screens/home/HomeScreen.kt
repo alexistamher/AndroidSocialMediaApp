@@ -1,6 +1,7 @@
 package dev.spooky.socialmediaapp.presentation.screens.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -60,6 +61,7 @@ import kotlin.random.Random
 @Composable
 internal fun HomeScreen(
     onLogout: () -> Unit,
+    onPostPressed: (postId: String) -> Unit = {},
     viewModel: HomeViewModel = koinViewModel<HomeViewModel>(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -128,6 +130,7 @@ internal fun HomeScreen(
                             onDeletePostPressed = { postId ->
                                 viewModel.deletePost(postId)
                             },
+                            onPostPressed = onPostPressed,
                         )
                     }
                 }
@@ -141,6 +144,7 @@ private fun PostsContent(
     posts: List<PostPreview>,
     modifier: Modifier,
     onDeletePostPressed: (id: String) -> Unit,
+    onPostPressed: (id: String) -> Unit = {},
 ) {
     LazyColumn(
         modifier
@@ -152,7 +156,11 @@ private fun PostsContent(
             items = posts,
             key = { _, item -> item.id },
         ) { idx, post ->
-            PostPreviewItem(post, onDeletePostPressed)
+            PostPreviewItem(
+                post = post,
+                onDeletePostPressed = onDeletePostPressed,
+                onPostPressed = onPostPressed,
+            )
             if (idx < posts.lastIndex) {
                 HorizontalDivider()
             }
@@ -164,11 +172,13 @@ private fun PostsContent(
 private fun PostPreviewItem(
     post: PostPreview,
     onDeletePostPressed: (id: String) -> Unit,
+    onPostPressed: (id: String) -> Unit = {},
 ) {
     var expanded by remember { mutableStateOf(false) }
     Row(
         Modifier
             .fillMaxWidth()
+            .clickable { onPostPressed(post.id) }
             .padding(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
