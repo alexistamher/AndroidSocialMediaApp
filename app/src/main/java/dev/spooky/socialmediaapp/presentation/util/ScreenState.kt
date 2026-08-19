@@ -52,11 +52,11 @@ internal inline fun <reified T> ScreenState<T>.isError(): Boolean {
 }
 
 @OptIn(ExperimentalContracts::class)
-internal inline fun <reified T> ScreenState<T>.asSuccess(): ScreenState.Success<T> {
+internal inline fun <reified T> ScreenState<T>.asSuccess(data: T? = null): ScreenState.Success<T> {
     contract {
         returns() implies (this@asSuccess is ScreenState.Success)
     }
-    return this as ScreenState.Success
+    return if (data != null) ScreenState.Success(data) else this as ScreenState.Success
 }
 
 internal inline fun <reified T> ScreenState<T>.success(): T = asSuccess().data

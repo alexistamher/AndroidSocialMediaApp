@@ -25,6 +25,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.setMain
 import kotlinx.serialization.json.Json
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -49,6 +50,12 @@ class RegisterViewModelTest {
         sessionHelper = spyk(SessionHelper(sessionRepository))
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
+    @After
+    fun tearDown() {
+        Dispatchers.shutdown()
+    }
+
     @Test
     fun `should register successfully`() {
         val client =
@@ -62,7 +69,11 @@ class RegisterViewModelTest {
                                 respond(
                                     content = Json.encodeToString(AuthResponse("token", "token")),
                                     HttpStatusCode.Created,
-                                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                                    headers =
+                                        headersOf(
+                                            HttpHeaders.ContentType,
+                                            "application/json",
+                                        ),
                                 )
                             }
 
@@ -70,7 +81,11 @@ class RegisterViewModelTest {
                                 respond(
                                     content = Json.encodeToString(UserInfoResponse.empty()),
                                     HttpStatusCode.OK,
-                                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                                    headers =
+                                        headersOf(
+                                            HttpHeaders.ContentType,
+                                            "application/json",
+                                        ),
                                 )
                             }
                         }
@@ -105,7 +120,11 @@ class RegisterViewModelTest {
                                 respond(
                                     content = ByteReadChannel("something went wrong"),
                                     HttpStatusCode.BadRequest,
-                                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                                    headers =
+                                        headersOf(
+                                            HttpHeaders.ContentType,
+                                            "application/json",
+                                        ),
                                 )
                             }
 
@@ -116,7 +135,11 @@ class RegisterViewModelTest {
                                             UserInfoResponse.empty(),
                                         ),
                                     HttpStatusCode.OK,
-                                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                                    headers =
+                                        headersOf(
+                                            HttpHeaders.ContentType,
+                                            "application/json",
+                                        ),
                                 )
                             }
                         }
@@ -154,7 +177,11 @@ class RegisterViewModelTest {
                                 respond(
                                     content = Json.encodeToString(AuthResponse("token", "token")),
                                     HttpStatusCode.Created,
-                                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                                    headers =
+                                        headersOf(
+                                            HttpHeaders.ContentType,
+                                            "application/json",
+                                        ),
                                 )
                             }
 
@@ -162,7 +189,11 @@ class RegisterViewModelTest {
                                 respond(
                                     content = ByteReadChannel("something went wrong"),
                                     HttpStatusCode.BadRequest,
-                                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                                    headers =
+                                        headersOf(
+                                            HttpHeaders.ContentType,
+                                            "application/json",
+                                        ),
                                 )
                             }
                         }
@@ -187,4 +218,4 @@ class RegisterViewModelTest {
     }
 }
 
-private fun UserInfoResponse.Companion.empty() = UserInfoResponse("", "", "", "", 0UL, 0UL, null)
+private fun UserInfoResponse.Companion.empty() = UserInfoResponse("", "", "", "", 0L, 0L, null)

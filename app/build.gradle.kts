@@ -24,6 +24,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         testInstrumentationRunnerArguments["notPackage"] = "dev.spooky.socialmediaapp.integration"
+        testInstrumentationRunnerArguments["clearPackageData"] = "true"
 
         buildConfigField("String", "BASE_API_URL", "\"$baseApiUrl\"")
     }

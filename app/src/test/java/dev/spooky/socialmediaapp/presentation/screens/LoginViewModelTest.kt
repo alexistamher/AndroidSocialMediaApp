@@ -199,4 +199,4 @@ class LoginViewModelTest : AutoCloseKoinTest() {
         }
 }
 
-private fun UserInfoResponse.Companion.empty() = UserInfoResponse("", "", "", "", 0UL, 0UL, null)
+private fun UserInfoResponse.Companion.empty() = UserInfoResponse("", "", "", "", 0L, 0L, null)

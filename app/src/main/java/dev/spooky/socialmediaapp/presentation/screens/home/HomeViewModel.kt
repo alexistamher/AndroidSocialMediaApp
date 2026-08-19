@@ -11,7 +11,6 @@ import dev.spooky.socialmediaapp.presentation.util.ScreenState
 import dev.spooky.socialmediaapp.presentation.util.asSuccess
 import dev.spooky.socialmediaapp.presentation.util.isSuccess
 import dev.spooky.socialmediaapp.presentation.util.success
-import dev.spooky.socialmediaapp.presentation.util.toSuccess
 import kotlinx.coroutines.launch
 
 internal class HomeViewModel(
@@ -47,7 +46,7 @@ internal class HomeViewModel(
                     currentState.success().run {
                         copy(posts = posts + post)
                     }
-                currentState.toSuccess(current)
+                currentState.asSuccess(current)
                 setState { ScreenState.Success(current) }
                 return@launch
             }
