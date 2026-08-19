@@ -20,7 +20,7 @@ internal class RegisterViewModel(
         email: String,
         password: String,
     ) {
-        setState { ScreenState.Loading }
+        setState { ScreenState.Loading() }
         viewModelScope.launch {
             val result = registerUseCase(username, displayName, email, password)
             if (result.isFailure) {

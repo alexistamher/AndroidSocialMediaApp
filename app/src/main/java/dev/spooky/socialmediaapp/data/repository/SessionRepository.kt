@@ -5,7 +5,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import dev.spooky.socialmediaapp.data.models.AuthData
 import dev.spooky.socialmediaapp.data.models.UserInfo
-import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 
 class SessionRepository(
@@ -26,12 +27,20 @@ class SessionRepository(
     }
 
     suspend fun getUserInfoPreferences(): UserInfo? {
-        val pref = preferences.data.last()[userInfoKey] ?: return null
+        val pref =
+            preferences.data
+                .map { pref ->
+                    pref[userInfoKey]
+                }.first() ?: return null
         return Json.decodeFromString(pref)
     }
 
     suspend fun getAuthDataPreferences(): AuthData? {
-        val pref = preferences.data.last()[authKey] ?: return null
+        val pref =
+            preferences.data
+                .map { prefs ->
+                    prefs[authKey]
+                }.first() ?: return null
         return Json.decodeFromString(pref)
     }
 }

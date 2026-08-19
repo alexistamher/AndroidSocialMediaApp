@@ -1,4 +1,4 @@
-package dev.spooky.socialmediaapp.presentation.models
+package dev.spooky.socialmediaapp.domain.models
 
 data class PostPreview(
     val id: String,

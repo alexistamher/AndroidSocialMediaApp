@@ -16,19 +16,19 @@ internal class LoginViewModel(
 
     lateinit var onLoginSuccess: () -> Unit
 
-    fun checkSession() {
-        val isAuthorized = sessionHelper.isAuthorized()
-        println("*_*: authorized: $isAuthorized")
-        if (isAuthorized) {
-            onLoginSuccess()
+    fun checkSession() =
+        viewModelScope.launch {
+            val validSession = sessionHelper.validateSession()
+            if (validSession) {
+                onLoginSuccess()
+            }
         }
-    }
 
     fun login(
         email: String,
         password: String,
     ) {
-        setState { ScreenState.Loading }
+        setState { ScreenState.Loading() }
         viewModelScope.launch {
             val result = loginUseCase(email, password)
             if (result.isFailure) {

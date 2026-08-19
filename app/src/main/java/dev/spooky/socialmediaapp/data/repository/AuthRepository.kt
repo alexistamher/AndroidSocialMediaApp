@@ -49,7 +49,7 @@ class AuthRepositoryImpl(
             }
         if (response.status == HttpStatusCode.OK) {
             val body = response.body<UserInfoResponse>()
-            val info = body.run { UserInfo(id, displayName, email, null, body.createdAt.toLong()) }
+            val info = body.run { UserInfo(id, displayName, email, null, body.createdAt) }
             sessionHelper.setUserInfo(info)
             return Result.success(Unit)
         }

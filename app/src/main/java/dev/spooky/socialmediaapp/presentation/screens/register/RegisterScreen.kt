@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.spooky.socialmediaapp.presentation.FormError
 import dev.spooky.socialmediaapp.presentation.util.ScreenState
 import dev.spooky.socialmediaapp.presentation.util.isEmailValid
+import dev.spooky.socialmediaapp.presentation.util.isLoading
 import dev.spooky.socialmediaapp.presentation.util.isPasswordValid
 import dev.spooky.socialmediaapp.ui.theme.SocialMediaAppTheme
 import org.koin.compose.koinInject
@@ -137,7 +138,7 @@ internal fun RegisterScreen(
             }
         },
     ) { mainPadding ->
-        if (state is ScreenState.Loading) {
+        if (state.isLoading()) {
             LinearProgressIndicator(
                 Modifier
                     .testTag("signup:progress_bar")

@@ -1,6 +1,5 @@
 package dev.spooky.socialmediaapp.data.util
 
-import androidx.annotation.VisibleForTesting
 import dev.spooky.socialmediaapp.data.models.AuthData
 import dev.spooky.socialmediaapp.data.models.UserInfo
 import dev.spooky.socialmediaapp.data.models.toDomain
@@ -14,26 +13,33 @@ class SessionHelper(
     private val repository: SessionRepository,
 ) {
     private var _userInfo: UserInfo? = null
-    private var _authData: AuthData? = null
+    private var authData: AuthData? = null
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal val _isAuthorized: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    private val isAuthorized: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-    fun isAuthorized(): Boolean = _isAuthorized.value
+    suspend fun validateSession(): Boolean {
+        if (authData != null && _userInfo != null) return true
+        val data = repository.getAuthDataPreferences() ?: return false
+        authData = data
+        isAuthorized.update { true }
+        val info = repository.getUserInfoPreferences() ?: return false
+        _userInfo = info
+        return true
+    }
 
     suspend fun getUserInfo(): DomainUserInfo? {
-        if (!_isAuthorized.value) return null
+        if (!isAuthorized.value) return null
         if (_userInfo == null) {
             val info = repository.getUserInfoPreferences() ?: return null
             _userInfo = info
-            _isAuthorized.update { true }
+            isAuthorized.update { true }
         }
         return _userInfo?.run { DomainUserInfo(id, displayName, email, photo) }
     }
 
     suspend fun getAuth(): DomainAuthData? {
-        if (_authData != null) {
-            return _authData?.toDomain()
+        if (authData != null) {
+            return authData?.toDomain()
         }
         return repository
             .getAuthDataPreferences()
@@ -41,8 +47,8 @@ class SessionHelper(
     }
 
     suspend fun setAuth(data: AuthData) {
-        _authData = data
-        _isAuthorized.update { true }
+        authData = data
+        isAuthorized.update { true }
         repository.setAuthPreferences(data)
     }
 
