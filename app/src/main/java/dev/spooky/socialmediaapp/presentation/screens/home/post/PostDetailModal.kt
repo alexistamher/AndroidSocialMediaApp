@@ -3,20 +3,19 @@ package dev.spooky.socialmediaapp.presentation.screens.home.post
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -24,7 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.outlined.ModeComment
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,8 +33,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,6 +50,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
@@ -60,8 +61,10 @@ import dev.spooky.socialmediaapp.domain.models.Reaction
 import dev.spooky.socialmediaapp.domain.models.ReactionType
 import dev.spooky.socialmediaapp.domain.models.TargetType
 import dev.spooky.socialmediaapp.domain.models.empty
-import dev.spooky.socialmediaapp.presentation.screens.home.util.toIcon
-import dev.spooky.socialmediaapp.presentation.util.LocalUserInfo
+import dev.spooky.socialmediaapp.domain.models.fromString
+import dev.spooky.socialmediaapp.presentation.components.AvatarComponent
+import dev.spooky.socialmediaapp.presentation.components.ReactionButtonComponent
+import dev.spooky.socialmediaapp.presentation.components.ReactionsPreviewComponent
 import dev.spooky.socialmediaapp.ui.theme.SocialMediaAppTheme
 import org.koin.androidx.compose.koinViewModel
 
@@ -97,6 +100,7 @@ internal fun PostDetailModal(
         Column {
             PostDetailModalContent(
                 post = state.post!!,
+                commentsSize = state.comments.size,
                 onReactionSelected = { targetId, targetType, reactionType ->
                     viewModel.toggleReaction(targetId, targetType, reactionType)
                 },
@@ -159,7 +163,7 @@ private fun SelectedCommentSection(
             .fillMaxWidth()
             .background(
                 MaterialTheme.colorScheme.surfaceContainer,
-                RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
+                RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
             ).padding(8.dp),
     ) {
         Row(
@@ -174,11 +178,24 @@ private fun SelectedCommentSection(
                 Modifier.weight(1f),
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
             )
-            IconButton(onCloseSelectedCommentPressed, Modifier.size(30.dp)) {
+            IconButton(onCloseSelectedCommentPressed, Modifier.size(24.dp)) {
                 Icon(Icons.Default.Clear, null)
             }
         }
-        Text(comment.content, style = MaterialTheme.typography.bodyMedium)
+        Row(
+            Modifier
+                .height(IntrinsicSize.Min)
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            VerticalDivider(thickness = 4.dp)
+            Text(
+                comment.content,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
     }
 }
 
@@ -203,59 +220,50 @@ private fun CommentPreviewItem(
     comment: Comment,
     onRespondCommentPressed: (commentId: String) -> Unit,
 ) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Box(
-            Modifier
-                .padding(8.dp)
-                .size(60.dp)
-                .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                Icons.Default.Face,
-                null,
-                Modifier.size(50.dp),
-                tint = MaterialTheme.colorScheme.secondary,
-            )
-        }
+    Row(Modifier.fillMaxWidth()) {
+        AvatarComponent()
         Column {
-            Text(comment.author.displayName)
-            Text(comment.content)
+            Surface(
+                Modifier
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                Column(Modifier.padding(8.dp)) {
+                    Row {
+                        Text(
+                            comment.author.displayName,
+                            Modifier.weight(1f),
+                            style =
+                                MaterialTheme.typography.bodyLarge.run {
+                                    copy(fontWeight = FontWeight.SemiBold, color = color.copy(0.6f))
+                                },
+                        )
+                        Text("${comment.createdAt}h")
+                    }
+                    Text(comment.content)
+                }
+            }
             Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("${comment.createdAt}h")
+                ReactionButtonComponent(emptyList(), {
+                    // TODO: agregar reactions e interacción al seleccionar la reaction
+                })
                 Button({
                     onRespondCommentPressed(comment.id)
                 }, colors = ButtonDefaults.textButtonColors()) {
                     Text("reply")
                 }
+                ReactionsPreviewComponent(
+                    reactions =
+                        comment.previewReactions.map {
+                            ReactionType.fromString(
+                                it.key,
+                            ) to it.value
+                        },
+                )
             }
-        }
-    }
-}
-
-@Composable
-private fun ReactionsSection(reactions: List<Reaction>) {
-    if (reactions.isEmpty()) return
-    val grouped = reactions.groupBy { it.reactionType }.map { it.key to it.value.size }
-
-    Box(
-        Modifier
-            .padding(horizontal = 8.dp)
-            .widthIn(min = 30.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        grouped.sortedBy { it.second }.forEachIndexed { index, (reactionType, _) ->
-            Icon(
-                reactionType.toIcon(),
-                null,
-                Modifier
-                    .size(18.dp)
-                    .offset(x = (-12 * index).dp)
-                    .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape),
-            )
         }
     }
 }
@@ -263,16 +271,49 @@ private fun ReactionsSection(reactions: List<Reaction>) {
 @Composable
 private fun PostDetailModalContent(
     post: Post,
+    commentsSize: Int,
     onReactionSelected: (targetId: String, targetType: TargetType, reactionType: ReactionType) -> Unit,
 ) {
     Column {
-        Text(post.content, Modifier.padding(8.dp), style = MaterialTheme.typography.bodyLarge)
-        HorizontalDivider()
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            AvatarComponent()
+            Column {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        post.author.displayName,
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                    )
+                    Text(
+                        "@${post.author.username}",
+                        style =
+                            MaterialTheme.typography.bodyLarge.run {
+                                copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = color.copy(alpha = 0.6f),
+                                )
+                            },
+                    )
+                }
+                Text("${post.createdAt}hrs")
+            }
+        }
+        Text(
+            post.content,
+            Modifier
+                .padding(horizontal = 8.dp)
+                .padding(bottom = 16.dp),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+        HorizontalDivider(Modifier.padding(horizontal = 8.dp))
         Row(
-            Modifier.fillMaxWidth(),
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            ReactionButton(
+            ReactionButtonComponent(
                 post.reactions,
                 onReactionSelected = { reactionType ->
                     onReactionSelected(
@@ -283,36 +324,22 @@ private fun PostDetailModalContent(
                 },
             )
             Spacer(Modifier.weight(1f))
-            ReactionsSection(post.reactions)
+            if (commentsSize > 0) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Icon(Icons.Outlined.ModeComment, null)
+                    Text(commentsSize.toString())
+                }
+            }
+            ReactionsPreviewComponent(
+                post.reactions
+                    .groupBy { it.reactionType }
+                    .map { it.key to it.value.size },
+            )
         }
-        HorizontalDivider()
-    }
-}
-
-@Composable
-private fun ReactionButton(
-    reactions: List<Reaction>,
-    onReactionSelected: (reactionType: ReactionType) -> Unit,
-) {
-    val userInfo = LocalUserInfo.current
-    val ownReaction = reactions.firstOrNull { it.author.id == userInfo.id }
-    val reactionType = ownReaction?.reactionType ?: ReactionType.LIKE
-    val buttonColors =
-        ownReaction?.let {
-            ButtonDefaults.textButtonColors(MaterialTheme.colorScheme.onPrimary)
-        } ?: ButtonDefaults.textButtonColors()
-
-    TextButton(
-        { onReactionSelected(reactionType) },
-        colors = buttonColors,
-    ) {
-        Row(
-            verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            Icon(reactionType.toIcon(), null)
-            Text(reactionType.description)
-        }
+        HorizontalDivider(Modifier.padding(horizontal = 8.dp))
     }
 }
 
@@ -324,7 +351,7 @@ private fun PreviewPostDetailModalContent() =
             Post(
                 "",
                 LoremIpsum(50).values.joinToString(" "),
-                Author.empty(),
+                Author.empty().copy(displayName = "John Connor", username = "jconnor92"),
                 listOf(
                     Reaction.empty().copy(reactionType = ReactionType.HAHA),
                     Reaction.empty().copy(reactionType = ReactionType.LIKE),
@@ -334,9 +361,9 @@ private fun PreviewPostDetailModalContent() =
                     Reaction.empty().copy(reactionType = ReactionType.LOVE),
                 ),
                 "public",
-                0L,
+                12L,
             )
-        PostDetailModalContent(post = post, onReactionSelected = { _, _, _ -> })
+        PostDetailModalContent(post = post, commentsSize = 3, onReactionSelected = { _, _, _ -> })
     }
 
 @Preview(showBackground = true)
@@ -345,7 +372,14 @@ private fun PreviewCommentPreviewItem() =
     SocialMediaAppTheme {
         val comment =
             Comment.empty().copy(
+                content = LoremIpsum(20).values.joinToString(" "),
                 author = Author.empty().copy(displayName = "JohnConnor92"),
+                previewReactions =
+                    mapOf(
+                        "haha" to 1,
+                        "love" to 2,
+                        "like" to 3,
+                    ),
             )
         CommentPreviewItem(comment = comment, onRespondCommentPressed = {})
     }
