@@ -1,8 +1,25 @@
 package dev.spooky.socialmediaapp.data.dto
 
+import dev.spooky.socialmediaapp.domain.models.ReactionType
+import dev.spooky.socialmediaapp.domain.models.fromString
+import dev.spooky.socialmediaapp.domain.models.Author as DomainAuthor
 import dev.spooky.socialmediaapp.domain.models.Comment as DomainComment
 import dev.spooky.socialmediaapp.domain.models.Post as DomainPost
+import dev.spooky.socialmediaapp.domain.models.PostPreview as DomainPostPreview
 import dev.spooky.socialmediaapp.domain.models.Reaction as DomainReaction
+
+fun Author.toDomain(): DomainAuthor = DomainAuthor(id, username, displayName, avatarURL = null)
+
+fun PostPreview.toDomain(): DomainPostPreview =
+    DomainPostPreview(
+        id,
+        content,
+        author.toDomain(),
+        commentsCount ?: 0,
+        previewReactions ?: emptyMap(),
+        visibility,
+        createdAt,
+    )
 
 internal fun Post.toDomain(): DomainPost =
     DomainPost(
@@ -18,7 +35,7 @@ internal fun Reaction.toDomain(): DomainReaction =
     DomainReaction(
         id = id,
         targetId = targetId,
-        reactionType = reactionType,
+        reactionType = ReactionType.fromString(reactionType),
         createdAt = createdAt,
         author = author.toDomain(),
     )

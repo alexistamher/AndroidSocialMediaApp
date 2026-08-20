@@ -8,4 +8,8 @@ data class Comment(
     val createdAt: Long,
     val postId: String,
     val parentCommentId: String?,
-)
+) {
+    companion object
+}
+
+fun Comment.Companion.empty() = Comment("", "", Author.empty(), emptyMap(), 0L, "", null)

@@ -5,4 +5,8 @@ data class UserInfo(
     val displayName: String,
     val email: String,
     val photo: String?,
-)
+) {
+    companion object
+}
+
+fun UserInfo.Companion.empty() = UserInfo("", "", "", null)

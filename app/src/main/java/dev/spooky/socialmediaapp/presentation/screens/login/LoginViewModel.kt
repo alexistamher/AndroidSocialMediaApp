@@ -35,7 +35,7 @@ internal class LoginViewModel(
                 setState { ScreenState.Error(result.error()) }
                 return@launch
             }
-            setState { ScreenState.Success(Unit) }
+            setState { ScreenState.Success(Unit) }.join()
             onLoginSuccess()
         }
     }
