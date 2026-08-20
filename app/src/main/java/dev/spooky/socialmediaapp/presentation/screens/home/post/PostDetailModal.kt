@@ -1,22 +1,26 @@
 package dev.spooky.socialmediaapp.presentation.screens.home.post
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.filled.Clear
@@ -29,24 +33,26 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.spooky.socialmediaapp.domain.models.Author
 import dev.spooky.socialmediaapp.domain.models.Comment
 import dev.spooky.socialmediaapp.domain.models.Post
@@ -67,42 +73,47 @@ internal fun PostDetailModal(
     viewModel: PostDetailViewModel = koinViewModel<PostDetailViewModel>(),
 ) {
     if (postId == null) return
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    var commentContent: String by remember { mutableStateOf("") }
+    val state by viewModel.state.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.getPost(postId)
     }
 
-    state.post?.let { post ->
-        ModalBottomSheet(
-            onCloseModal,
-            sheetState =
-                rememberModalBottomSheetState(
-                    skipPartiallyExpanded = true,
-                ),
-        ) {
-            Column {
-                PostDetailModalContent(
-                    post = post,
-                    onReactionSelected = { targetId, targetType, reactionType ->
-                        viewModel.toggleReaction(targetId, targetType, reactionType)
-                    },
-                )
-                CommentsSection(comments = state.comments, onRespondCommentPressed = { commentId ->
-                    viewModel.setCommentId(commentId)
-                })
-                state.selectedComment?.let { comment ->
-                    SelectedCommentSection(comment = comment, onCloseSelectedCommentPressed = {
-                        viewModel.setCommentId(
-                            null,
-                        )
-                    })
-                }
-                CommentTextField(onAddComment = { content ->
-                    viewModel.addComment(content)
+    if (state.post == null) return
+    ModalBottomSheet(
+        {
+            viewModel.reset()
+            onCloseModal()
+        },
+        Modifier.systemBarsPadding(),
+        sheetState =
+            rememberModalBottomSheetState(
+                skipPartiallyExpanded = true,
+            ),
+        contentWindowInsets = {
+            WindowInsets.ime
+        },
+    ) {
+        Column {
+            PostDetailModalContent(
+                post = state.post!!,
+                onReactionSelected = { targetId, targetType, reactionType ->
+                    viewModel.toggleReaction(targetId, targetType, reactionType)
+                },
+            )
+            CommentsSection(comments = state.comments, onRespondCommentPressed = { commentId ->
+                viewModel.setCommentId(commentId)
+            })
+            state.selectedComment?.let { comment ->
+                SelectedCommentSection(comment = comment, onCloseSelectedCommentPressed = {
+                    viewModel.setCommentId(
+                        null,
+                    )
                 })
             }
+            CommentTextField(onAddComment = { content ->
+                viewModel.addComment(content)
+            })
         }
     }
 }
@@ -110,26 +121,31 @@ internal fun PostDetailModal(
 @Composable
 private fun CommentTextField(onAddComment: (content: String) -> Unit) {
     var commentContent: String by remember { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
 
     Row(
         Modifier
             .imePadding()
+            .padding(8.dp)
             .fillMaxWidth(),
     ) {
-        BasicTextField(
+        OutlinedTextField(
             commentContent,
             { value -> commentContent = value },
             Modifier.weight(1f),
-        )
-        IconButton(
-            {
-                onAddComment(commentContent)
-                commentContent = ""
+            shape = CircleShape,
+            trailingIcon = {
+                Icon(
+                    Icons.AutoMirrored.Outlined.Send,
+                    null,
+                    Modifier.clickable(enabled = commentContent.isNotEmpty(), onClick = {
+                        onAddComment(commentContent)
+                        commentContent = ""
+                        focusManager.clearFocus()
+                    }),
+                )
             },
-            enabled = commentContent.isNotEmpty(),
-        ) {
-            Icon(Icons.AutoMirrored.Outlined.Send, null)
-        }
+        )
     }
 }
 
@@ -167,11 +183,15 @@ private fun SelectedCommentSection(
 }
 
 @Composable
-private fun CommentsSection(
+private fun ColumnScope.CommentsSection(
     comments: List<Comment>,
     onRespondCommentPressed: (commentId: String) -> Unit,
 ) {
-    LazyColumn(Modifier.padding(8.dp)) {
+    LazyColumn(
+        Modifier
+            .weight(1f)
+            .padding(8.dp),
+    ) {
         items(comments) { comment ->
             CommentPreviewItem(comment, onRespondCommentPressed)
         }
@@ -232,6 +252,7 @@ private fun ReactionsSection(reactions: List<Reaction>) {
                 reactionType.toIcon(),
                 null,
                 Modifier
+                    .size(18.dp)
                     .offset(x = (-12 * index).dp)
                     .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape),
             )
@@ -276,9 +297,14 @@ private fun ReactionButton(
     val userInfo = LocalUserInfo.current
     val ownReaction = reactions.firstOrNull { it.author.id == userInfo.id }
     val reactionType = ownReaction?.reactionType ?: ReactionType.LIKE
+    val buttonColors =
+        ownReaction?.let {
+            ButtonDefaults.textButtonColors(MaterialTheme.colorScheme.onPrimary)
+        } ?: ButtonDefaults.textButtonColors()
+
     TextButton(
         { onReactionSelected(reactionType) },
-        colors = ButtonDefaults.textButtonColors(),
+        colors = buttonColors,
     ) {
         Row(
             verticalAlignment = Alignment.Bottom,
@@ -301,6 +327,8 @@ private fun PreviewPostDetailModalContent() =
                 Author.empty(),
                 listOf(
                     Reaction.empty().copy(reactionType = ReactionType.HAHA),
+                    Reaction.empty().copy(reactionType = ReactionType.LIKE),
+                    Reaction.empty().copy(reactionType = ReactionType.LIKE),
                     Reaction.empty().copy(reactionType = ReactionType.LIKE),
                     Reaction.empty().copy(reactionType = ReactionType.LOVE),
                     Reaction.empty().copy(reactionType = ReactionType.LOVE),
@@ -331,4 +359,10 @@ private fun PreviewSelectedCommentSection() {
             author = Author.empty().copy(displayName = "JohnConnor92", username = "jconnor92"),
         )
     SelectedCommentSection(comment = comment, onCloseSelectedCommentPressed = {})
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewCommentTextField() {
+    CommentTextField(onAddComment = {})
 }

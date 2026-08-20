@@ -1,6 +1,7 @@
 package dev.spooky.socialmediaapp.di
 
 import dev.spooky.socialmediaapp.domain.usecase.auth.LoginUseCase
+import dev.spooky.socialmediaapp.domain.usecase.auth.LogoutUseCase
 import dev.spooky.socialmediaapp.domain.usecase.auth.RegisterUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.AddCommentUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.AddPostUseCase
@@ -23,7 +24,7 @@ val appModule =
         // useCases
         factoryOf(::LoginUseCase)
         factoryOf(::RegisterUseCase)
-        factoryOf(::RegisterUseCase)
+        factoryOf(::LogoutUseCase)
         factoryOf(::GetPostsUseCase)
         factoryOf(::AddPostUseCase)
         factoryOf(::DeletePostUseCase)

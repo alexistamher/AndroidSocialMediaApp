@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:filename")
+
 package dev.spooky.socialmediaapp.data.repository
 
 import dev.spooky.socialmediaapp.data.dto.AuthRequest

@@ -50,7 +50,7 @@ internal class PostDetailViewModel(
             val result = addCommentUseCase(comment, postId, currentState.selectedComment?.id)
             if (result.isFailure) return@launch
             val comment = result.getOrNull() ?: return@launch
-            setState { current -> current.copy(comments = current.comments + comment) }
+            setState { current -> current.copy(comments = current.comments + comment, selectedComment = null) }
         }
     }
 
@@ -112,6 +112,10 @@ internal class PostDetailViewModel(
             return
         }
         addReaction(targetId, reactionType, targetType)
+    }
+
+    fun reset() {
+        setState { PostDetailState() }
     }
 }
 

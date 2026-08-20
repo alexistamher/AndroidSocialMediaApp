@@ -12,7 +12,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            SocialMediaAppTheme {
+            SocialMediaAppTheme(darkTheme = false) {
                 RootNavigation()
             }
         }

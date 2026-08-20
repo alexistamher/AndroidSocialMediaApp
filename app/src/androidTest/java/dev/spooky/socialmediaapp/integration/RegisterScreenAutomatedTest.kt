@@ -5,7 +5,7 @@ import androidx.test.uiautomator.uiAutomator
 import androidx.test.uiautomator.waitForStable
 import org.junit.Test
 
-class O1RegisterScreenAutomatedTest {
+class RegisterScreenAutomatedTest {
     val usernameTag = "signup:username_field"
     val displayNameTag = "display_name_field"
     val emailTag = "signup:email_field"

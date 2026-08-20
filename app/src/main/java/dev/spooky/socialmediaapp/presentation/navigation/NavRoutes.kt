@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:filename")
+
 package dev.spooky.socialmediaapp.presentation.navigation
 
 import kotlinx.serialization.Serializable

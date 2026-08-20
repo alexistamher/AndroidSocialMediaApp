@@ -5,7 +5,7 @@ import androidx.test.uiautomator.uiAutomator
 import androidx.test.uiautomator.waitForStable
 import org.junit.Test
 
-class O2LoginScreenAutomatedTest {
+class LoginScreenAutomatedTest {
     private val usernameTag = "login:email_field"
 
     @Test

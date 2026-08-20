@@ -19,7 +19,7 @@ internal class LoginViewModel(
     fun checkSession() =
         viewModelScope.launch {
             val validSession = sessionHelper.validateSession()
-            if (validSession) {
+            if (validSession && ::onLoginSuccess.isInitialized) {
                 onLoginSuccess()
             }
         }

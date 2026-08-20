@@ -61,4 +61,10 @@ class SessionHelper(
         repository.setUserInfoPreferences(info)
         _userInfo.update { info.toDomain() }
     }
+
+    suspend fun reset() {
+        repository.reset()
+        _authData.update { null }
+        _userInfo.update { null }
+    }
 }

@@ -43,4 +43,10 @@ class SessionRepository(
                 }.first() ?: return null
         return Json.decodeFromString(pref)
     }
+
+    suspend fun reset() {
+        preferences.edit { prefs ->
+            prefs.clear()
+        }
+    }
 }

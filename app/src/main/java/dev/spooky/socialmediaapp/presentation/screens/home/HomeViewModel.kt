@@ -3,6 +3,7 @@ package dev.spooky.socialmediaapp.presentation.screens.home
 import androidx.lifecycle.viewModelScope
 import dev.spooky.socialmediaapp.core.util.error
 import dev.spooky.socialmediaapp.domain.models.PostPreview
+import dev.spooky.socialmediaapp.domain.usecase.auth.LogoutUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.AddPostUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.DeletePostUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.GetPostsUseCase
@@ -17,8 +18,11 @@ internal class HomeViewModel(
     private val getPostsUseCase: GetPostsUseCase,
     private val addPostUseCase: AddPostUseCase,
     private val deletePostUseCase: DeletePostUseCase,
+    private val logoutUseCase: LogoutUseCase,
 ) : BaseViewModel<ScreenState<HomeState>>() {
     override fun initialState() = ScreenState.Idle
+
+    lateinit var onLogout: () -> Unit
 
     fun getPosts() {
         setState { ScreenState.Loading() }
@@ -75,6 +79,16 @@ internal class HomeViewModel(
                 copy(data = data.copy(postId = postId))
             }
         }
+    }
+
+    fun logout() {
+        viewModelScope
+            .launch {
+                logoutUseCase()
+            }.invokeOnCompletion {
+                if (!::onLogout.isInitialized) return@invokeOnCompletion
+                onLogout()
+            }
     }
 }
 

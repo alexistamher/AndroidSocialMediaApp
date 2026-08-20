@@ -10,27 +10,29 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.outlined.KeyOff
 import androidx.compose.material.icons.outlined.ModeComment
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -68,6 +70,7 @@ internal fun HomeScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
+        viewModel.onLogout = onLogout
         viewModel.getPosts()
     }
 
@@ -77,12 +80,36 @@ internal fun HomeScreen(
             testTag = "home_screen"
         },
         topBar = {
-            TopAppBar(title = {
-                Text(
-                    "Home",
-                    style = MaterialTheme.typography.titleLarge,
-                )
-            })
+            TopAppBar(
+                title = {
+                    Text(
+                        "Home",
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                },
+                actions = {
+                    var expanded by remember { mutableStateOf(false) }
+                    Box {
+                        IconButton(onClick = { expanded = !expanded }) {
+                            Icon(Icons.Default.Menu, contentDescription = "More options")
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                        ) {
+                            DropdownMenuItem(
+                                leadingIcon = {
+                                    Icon(Icons.Outlined.KeyOff, null)
+                                },
+                                text = {
+                                    Text("Logout")
+                                },
+                                onClick = { viewModel.logout() },
+                            )
+                        }
+                    }
+                },
+            )
         },
     ) { mainPadding ->
         when (state) {
@@ -93,17 +120,28 @@ internal fun HomeScreen(
                         .fillMaxSize(),
                     Alignment.Center,
                 ) {
-                    Text(state.asError())
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(state.asError(), style = MaterialTheme.typography.titleLarge)
+                        TextButton(viewModel::getPosts) {
+                            Text("try again")
+                        }
+                    }
                 }
             }
 
             ScreenState.Idle, is ScreenState.Loading -> {
-                LinearProgressIndicator(
+                Box(
                     Modifier
                         .testTag("home:progress_bar")
-                        .fillMaxWidth()
-                        .systemBarsPadding(),
-                )
+                        .padding(mainPadding)
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator()
+                }
             }
 
             is ScreenState.Success -> {
@@ -138,11 +176,10 @@ internal fun HomeScreen(
             }
         }
         if (state.isSuccess()) {
-            state.success().postId?.let { postId ->
-                PostDetailModal(postId = postId, onCloseModal = {
-                    viewModel.selectPost(null)
-                })
-            }
+            val postId = state.success().postId ?: return@Scaffold
+            PostDetailModal(postId = postId, onCloseModal = {
+                viewModel.selectPost(null)
+            })
         }
     }
 }
