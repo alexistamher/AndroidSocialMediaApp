@@ -68,8 +68,17 @@ internal class HomeViewModel(
             }
         }
     }
+
+    fun selectPost(postId: String?) {
+        setState { current ->
+            current.asSuccess().run {
+                copy(data = data.copy(postId = postId))
+            }
+        }
+    }
 }
 
 internal data class HomeState(
-    val posts: List<PostPreview>,
+    val posts: List<PostPreview> = emptyList(),
+    val postId: String? = null,
 )

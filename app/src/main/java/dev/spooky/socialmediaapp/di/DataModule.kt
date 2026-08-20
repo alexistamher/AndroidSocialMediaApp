@@ -2,9 +2,11 @@ package dev.spooky.socialmediaapp.di
 
 import dev.spooky.socialmediaapp.BuildConfig
 import dev.spooky.socialmediaapp.data.repository.AuthRepositoryImpl
+import dev.spooky.socialmediaapp.data.repository.CommentRepositoryImpl
 import dev.spooky.socialmediaapp.data.repository.PostRepositoryImpl
 import dev.spooky.socialmediaapp.data.util.httpClient
 import dev.spooky.socialmediaapp.domain.repository.AuthRepository
+import dev.spooky.socialmediaapp.domain.repository.CommentRepository
 import dev.spooky.socialmediaapp.domain.repository.PostRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
@@ -14,6 +16,7 @@ import org.koin.dsl.module
 
 val dataModule =
     module {
+        // repositories
         single {
             AuthRepositoryImpl(
                 get(),
@@ -28,6 +31,15 @@ val dataModule =
                 get(),
             )
         } bind PostRepository::class
+        single {
+            CommentRepositoryImpl(
+                get(),
+                get(named("API_URL")),
+                get(),
+            )
+        } bind CommentRepository::class
+
+        // http
         factory<HttpClient> { httpClient(CIO) }
         single(named("API_URL"), true) {
             "${BuildConfig.BASE_API_URL}/api/v1"

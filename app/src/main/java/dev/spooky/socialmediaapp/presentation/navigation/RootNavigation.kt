@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import dev.spooky.socialmediaapp.presentation.screens.home.HomeScreen
 import dev.spooky.socialmediaapp.presentation.screens.login.LoginScreen
 import dev.spooky.socialmediaapp.presentation.screens.register.RegisterScreen
@@ -47,14 +46,7 @@ fun RootNavigation() {
                         popUpTo(Screen.Home) { inclusive = true }
                     }
                 },
-                onPostPressed = { postId ->
-                    navController.navigate(Screen.PostDetail(postId = postId))
-                },
             )
-        }
-        composable<Screen.PostDetail> { backStackEntry ->
-            val postDetail = backStackEntry.toRoute<Screen.PostDetail>()
-            // TODO: Conectar PostDetailScreen(postId = postDetail.postId, onNavigateBack = { navController.popBackStack() })
         }
     }
 }

@@ -17,8 +17,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.MoreHoriz
-import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.ModeComment
+import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -51,8 +51,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.spooky.socialmediaapp.domain.models.Author
 import dev.spooky.socialmediaapp.domain.models.PostPreview
+import dev.spooky.socialmediaapp.presentation.screens.home.post.PostDetailModal
 import dev.spooky.socialmediaapp.presentation.util.ScreenState
 import dev.spooky.socialmediaapp.presentation.util.asError
+import dev.spooky.socialmediaapp.presentation.util.isSuccess
 import dev.spooky.socialmediaapp.presentation.util.success
 import org.koin.androidx.compose.koinViewModel
 import kotlin.random.Random
@@ -61,7 +63,6 @@ import kotlin.random.Random
 @Composable
 internal fun HomeScreen(
     onLogout: () -> Unit,
-    onPostPressed: (postId: String) -> Unit = {},
     viewModel: HomeViewModel = koinViewModel<HomeViewModel>(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -130,10 +131,17 @@ internal fun HomeScreen(
                             onDeletePostPressed = { postId ->
                                 viewModel.deletePost(postId)
                             },
-                            onPostPressed = onPostPressed,
+                            onPostPressed = { postId -> viewModel.selectPost(postId) },
                         )
                     }
                 }
+            }
+        }
+        if (state.isSuccess()) {
+            state.success().postId?.let { postId ->
+                PostDetailModal(postId = postId, onCloseModal = {
+                    viewModel.selectPost(null)
+                })
             }
         }
     }
@@ -226,12 +234,13 @@ private fun PostPreviewItem(
             Row(
                 Modifier.padding(vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.Bottom,
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Icon(Icons.Outlined.FavoriteBorder, null)
+                    Icon(Icons.Outlined.ThumbUp, null)
                     Text(post.previewReactions.size.toString())
                 }
                 Row(

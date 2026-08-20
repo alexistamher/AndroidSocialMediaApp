@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:filename")
+
 package dev.spooky.socialmediaapp.data.repository
 
 import dev.spooky.socialmediaapp.core.util.failed
@@ -5,6 +7,7 @@ import dev.spooky.socialmediaapp.data.dto.AddPostRequest
 import dev.spooky.socialmediaapp.data.dto.GetPostsResponse
 import dev.spooky.socialmediaapp.data.dto.toDomain
 import dev.spooky.socialmediaapp.data.util.SessionHelper
+import dev.spooky.socialmediaapp.domain.models.Post
 import dev.spooky.socialmediaapp.domain.models.PostPreview
 import dev.spooky.socialmediaapp.domain.repository.PostRepository
 import io.ktor.client.HttpClient
@@ -12,8 +15,10 @@ import io.ktor.client.call.body
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.request
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import dev.spooky.socialmediaapp.data.dto.Post as DataPost
 import dev.spooky.socialmediaapp.data.dto.PostPreview as DataPostPreview
 
 class PostRepositoryImpl(
@@ -66,5 +71,21 @@ class PostRepositoryImpl(
             return Result.failed("failed on getting posts")
         }
         return Result.success(Unit)
+    }
+
+    override suspend fun getPostById(postId: String): Result<Post> {
+        val auth = sessionHelper.getAuth() ?: return Result.failed("unauthorized")
+        val response =
+            http.request("$baseUrl/posts/$postId") {
+                method = HttpMethod.Get
+                bearerAuth(auth.accessToken)
+            }
+        if (response.status != HttpStatusCode.OK) {
+            return Result.failed("failed on getting post")
+        }
+
+        val res = response.body<DataPost>()
+        val posts = res.toDomain()
+        return Result.success(posts)
     }
 }

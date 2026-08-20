@@ -1,5 +1,6 @@
 package dev.spooky.socialmediaapp.domain.repository
 
+import dev.spooky.socialmediaapp.domain.models.Post
 import dev.spooky.socialmediaapp.domain.models.PostPreview
 
 interface PostRepository {
@@ -11,4 +12,6 @@ interface PostRepository {
     ): Result<PostPreview>
 
     suspend fun deletePost(postId: String): Result<Unit>
+
+    suspend fun getPostById(postId: String): Result<Post>
 }

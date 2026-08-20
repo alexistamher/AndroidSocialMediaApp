@@ -11,7 +11,4 @@ sealed interface Screen {
 
     @Serializable
     data object Home : Screen
-
-    @Serializable
-    data class PostDetail(val postId: String) : Screen
 }

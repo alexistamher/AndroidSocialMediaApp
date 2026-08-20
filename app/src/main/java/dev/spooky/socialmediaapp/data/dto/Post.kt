@@ -29,6 +29,29 @@ data class PostPreview(
 )
 
 @Serializable
+internal data class Post(
+    val id: String,
+    val content: String,
+    val author: Author,
+    val reactions: List<Reaction>,
+    val visibility: String,
+    @SerialName("created_at")
+    val createdAt: Long,
+)
+
+@Serializable
+internal data class Reaction(
+    val id: String,
+    @SerialName("target_id")
+    val targetId: String,
+    @SerialName("reaction_type")
+    val reactionType: String,
+    @SerialName("created_at")
+    val createdAt: Long,
+    val author: Author,
+)
+
+@Serializable
 internal data class GetPostsResponse(
     val posts: List<PostPreview>,
     @SerialName("next_cursor")

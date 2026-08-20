@@ -6,7 +6,7 @@ data class Author(
     val displayName: String,
     val avatarURL: String?,
 ) {
-    companion object {
-        fun empty() = Author("", "", "", null)
-    }
+    companion object
 }
+
+fun Author.Companion.empty() = Author("", "", "", null)
