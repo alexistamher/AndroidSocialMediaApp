@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dev.spooky.socialmediaapp.data.util.SessionHelper
+import dev.spooky.socialmediaapp.presentation.screens.SplashScreen
 import dev.spooky.socialmediaapp.presentation.screens.home.HomeScreen
 import dev.spooky.socialmediaapp.presentation.screens.login.LoginScreen
 import dev.spooky.socialmediaapp.presentation.screens.register.RegisterScreen
@@ -21,8 +22,22 @@ fun RootNavigation() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = Screen.Login,
+        startDestination = Screen.Splash,
     ) {
+        composable<Screen.Splash> {
+            SplashScreen(
+                onNavigateToLogin = {
+                    navController.navigate(Screen.Login) {
+                        popUpTo(Screen.Login) { inclusive = true }
+                    }
+                },
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home) {
+                        popUpTo(Screen.Login) { inclusive = true }
+                    }
+                },
+            )
+        }
         composable<Screen.Login> {
             LoginScreen(
                 onNavigateToRegister = {

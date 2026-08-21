@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,7 +20,6 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.outlined.KeyOff
 import androidx.compose.material.icons.outlined.ModeComment
-import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,6 +36,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,13 +48,24 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.spooky.socialmediaapp.domain.models.Author
 import dev.spooky.socialmediaapp.domain.models.PostPreview
+import dev.spooky.socialmediaapp.domain.models.PreviewReaction
+import dev.spooky.socialmediaapp.domain.models.ReactionType
+import dev.spooky.socialmediaapp.domain.models.TargetType
+import dev.spooky.socialmediaapp.domain.models.UserInfo
+import dev.spooky.socialmediaapp.domain.models.empty
+import dev.spooky.socialmediaapp.presentation.components.ReactionButtonComponent
+import dev.spooky.socialmediaapp.presentation.components.ReactionsPreviewComponent
 import dev.spooky.socialmediaapp.presentation.screens.home.post.PostDetailModal
+import dev.spooky.socialmediaapp.presentation.screens.home.util.PreviewReactionsList
+import dev.spooky.socialmediaapp.presentation.screens.home.util.toListType
+import dev.spooky.socialmediaapp.presentation.util.LocalUserInfo
 import dev.spooky.socialmediaapp.presentation.util.ScreenState
 import dev.spooky.socialmediaapp.presentation.util.asError
 import dev.spooky.socialmediaapp.presentation.util.isSuccess
@@ -170,6 +182,7 @@ internal fun HomeScreen(
                                 viewModel.deletePost(postId)
                             },
                             onPostPressed = { postId -> viewModel.selectPost(postId) },
+                            onReactionPressed = viewModel::toggleReaction,
                         )
                     }
                 }
@@ -190,6 +203,7 @@ private fun PostsContent(
     modifier: Modifier,
     onDeletePostPressed: (id: String) -> Unit,
     onPostPressed: (id: String) -> Unit = {},
+    onReactionPressed: (targetId: String, targetType: TargetType, reactionType: ReactionType) -> Unit,
 ) {
     LazyColumn(
         modifier
@@ -205,6 +219,7 @@ private fun PostsContent(
                 post = post,
                 onDeletePostPressed = onDeletePostPressed,
                 onPostPressed = onPostPressed,
+                onReactionPressed = onReactionPressed,
             )
             if (idx < posts.lastIndex) {
                 HorizontalDivider()
@@ -217,7 +232,8 @@ private fun PostsContent(
 private fun PostPreviewItem(
     post: PostPreview,
     onDeletePostPressed: (id: String) -> Unit,
-    onPostPressed: (id: String) -> Unit = {},
+    onPostPressed: (id: String) -> Unit,
+    onReactionPressed: (targetId: String, targetType: TargetType, reactionType: ReactionType) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     Row(
@@ -248,8 +264,18 @@ private fun PostPreviewItem(
                     Modifier.weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Text(post.author.displayName, Modifier.weight(1f))
-                    Text("@${post.author.username}")
+                    Text(
+                        post.author.displayName,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    )
+                    Text(
+                        "@${post.author.username}",
+                        style =
+                            MaterialTheme.typography.titleMedium.run {
+                                copy(fontWeight = FontWeight.SemiBold, color = color.copy(alpha = 0.6f))
+                            },
+                    )
+                    Spacer(Modifier.weight(1f))
                     Text("2h")
                 }
                 Box {
@@ -267,26 +293,29 @@ private fun PostPreviewItem(
                     }
                 }
             }
-            Text(post.content)
+            Text(post.content, style = MaterialTheme.typography.bodyMedium)
             Row(
                 Modifier.padding(vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.Bottom,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Icon(Icons.Outlined.ThumbUp, null)
-                    Text(post.previewReactions.size.toString())
+                ReactionButtonComponent(
+                    post.previewReactions,
+                    { reactionType ->
+                        onReactionPressed(post.id, TargetType.POST, reactionType)
+                    },
+                )
+                if (post.commentsCount != 0) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Icon(Icons.Outlined.ModeComment, null)
+                        Text(post.commentsCount.toString())
+                    }
                 }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Icon(Icons.Outlined.ModeComment, null)
-                    Text(post.previewReactions.size.toString())
-                }
+                Spacer(Modifier.weight(1f))
+                ReactionsPreviewComponent(PreviewReactionsList(post.previewReactions).toListType())
             }
         }
     }
@@ -348,12 +377,12 @@ private fun PreviewPostsContent() {
                 content,
                 Author("$it-$it", "test user $it", "TestUser$it", null),
                 commentsSize,
-                emptyMap(),
+                emptyList(),
                 "public",
                 0L,
             )
         }
-    PostsContent(posts, Modifier, onDeletePostPressed = {})
+    PostsContent(posts, Modifier, onDeletePostPressed = {}, onReactionPressed = { _, _, _ -> })
 }
 
 @Composable
@@ -370,14 +399,24 @@ private fun PreviewPostPreviewItem() {
                 "TestUser",
                 null,
             ),
-            0,
-            mapOf(
-                "like" to 3,
-                "haha" to 2,
-                "angry" to 1,
+            4,
+            listOf(
+                PreviewReaction("", "haha", "target-preview-id-1", "author-preview-id-1"),
+                PreviewReaction("", "like", "target-preview-id-3", "author-preview-id-3"),
+                PreviewReaction("", "love", "target-preview-id-5", "author-preview-id-5"),
+                PreviewReaction("", "love", "target-preview-id-7", "author-preview-id-7"),
             ),
             "public",
             0L,
         )
-    PostPreviewItem(post, onDeletePostPressed = {})
+    CompositionLocalProvider(
+        LocalUserInfo provides UserInfo.empty().copy(id = "author-preview-id-5"),
+    ) {
+        PostPreviewItem(
+            post,
+            onDeletePostPressed = {},
+            onPostPressed = {},
+            onReactionPressed = { _, _, _ -> },
+        )
+    }
 }

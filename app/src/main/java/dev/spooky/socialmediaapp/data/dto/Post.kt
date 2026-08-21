@@ -18,9 +18,9 @@ data class PostPreview(
     val content: String,
     val author: Author,
     @SerialName("comments_count")
-    val commentsCount: Int?,
+    val commentsCount: Int,
     @SerialName("preview_reactions")
-    val previewReactions: Map<String, Int>?,
+    val previewReactions: List<PreviewReaction>,
     val visibility: String,
     @SerialName("created_at")
     val createdAt: Long,
@@ -31,7 +31,8 @@ internal data class Post(
     val id: String,
     val content: String,
     val author: Author,
-    val reactions: List<Reaction>,
+    @SerialName("preview_reactions")
+    val previewReactions: List<PreviewReaction>,
     val visibility: String,
     @SerialName("created_at")
     val createdAt: Long,

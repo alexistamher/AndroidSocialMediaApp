@@ -4,9 +4,11 @@ package dev.spooky.socialmediaapp.data.repository
 
 import dev.spooky.socialmediaapp.core.util.failed
 import dev.spooky.socialmediaapp.data.dto.AddReactionRequest
+import dev.spooky.socialmediaapp.data.dto.UpdateReactionRequest
 import dev.spooky.socialmediaapp.data.dto.toDomain
 import dev.spooky.socialmediaapp.data.util.SessionHelper
 import dev.spooky.socialmediaapp.domain.models.Reaction
+import dev.spooky.socialmediaapp.domain.models.ReactionType
 import dev.spooky.socialmediaapp.domain.repository.ReactionRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -37,7 +39,7 @@ class ReactionRepositoryImpl(
                 setBody(reqBody)
             }
         if (response.status != HttpStatusCode.OK) {
-            return Result.failed("user data not available")
+            return Result.failed("failed on adding reaction")
         }
         val body = response.body<DataReaction>()
         return Result.success(body.toDomain())
@@ -51,7 +53,26 @@ class ReactionRepositoryImpl(
                 bearerAuth(auth.accessToken)
             }
         if (response.status != HttpStatusCode.OK) {
-            return Result.failed("user data not available")
+            return Result.failed("failed on deleting reaction")
+        }
+
+        return Result.success(Unit)
+    }
+
+    override suspend fun updateReaction(
+        reactionId: String,
+        reactionType: ReactionType,
+    ): Result<Unit> {
+        val reqBody = UpdateReactionRequest(reactionId, reactionType.description)
+        val auth = sessionHelper.getAuth() ?: return Result.failed("unauthorized")
+        val response =
+            http.request("$baseUrl/reactions") {
+                method = HttpMethod.Put
+                bearerAuth(auth.accessToken)
+                setBody(reqBody)
+            }
+        if (response.status != HttpStatusCode.OK) {
+            return Result.failed("failed on updating reaction")
         }
 
         return Result.success(Unit)

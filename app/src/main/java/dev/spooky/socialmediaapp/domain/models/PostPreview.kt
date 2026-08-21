@@ -5,7 +5,7 @@ data class PostPreview(
     val content: String,
     val author: Author,
     val commentsCount: Int,
-    val previewReactions: Map<String, Int>,
+    val previewReactions: List<PreviewReaction>,
     val visibility: String,
     val createdAt: Long,
 )

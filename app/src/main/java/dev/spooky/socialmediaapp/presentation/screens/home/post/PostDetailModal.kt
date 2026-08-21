@@ -57,14 +57,15 @@ import androidx.compose.ui.unit.dp
 import dev.spooky.socialmediaapp.domain.models.Author
 import dev.spooky.socialmediaapp.domain.models.Comment
 import dev.spooky.socialmediaapp.domain.models.Post
-import dev.spooky.socialmediaapp.domain.models.Reaction
+import dev.spooky.socialmediaapp.domain.models.PreviewReaction
 import dev.spooky.socialmediaapp.domain.models.ReactionType
 import dev.spooky.socialmediaapp.domain.models.TargetType
 import dev.spooky.socialmediaapp.domain.models.empty
-import dev.spooky.socialmediaapp.domain.models.fromString
 import dev.spooky.socialmediaapp.presentation.components.AvatarComponent
 import dev.spooky.socialmediaapp.presentation.components.ReactionButtonComponent
 import dev.spooky.socialmediaapp.presentation.components.ReactionsPreviewComponent
+import dev.spooky.socialmediaapp.presentation.screens.home.util.PreviewReactionsList
+import dev.spooky.socialmediaapp.presentation.screens.home.util.toListType
 import dev.spooky.socialmediaapp.ui.theme.SocialMediaAppTheme
 import org.koin.androidx.compose.koinViewModel
 
@@ -256,12 +257,7 @@ private fun CommentPreviewItem(
                     Text("reply")
                 }
                 ReactionsPreviewComponent(
-                    reactions =
-                        comment.previewReactions.map {
-                            ReactionType.fromString(
-                                it.key,
-                            ) to it.value
-                        },
+                    reactions = PreviewReactionsList(comment.previewReactions).toListType(),
                 )
             }
         }
@@ -314,7 +310,7 @@ private fun PostDetailModalContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             ReactionButtonComponent(
-                post.reactions,
+                post.previewReactions,
                 onReactionSelected = { reactionType ->
                     onReactionSelected(
                         post.id,
@@ -334,9 +330,7 @@ private fun PostDetailModalContent(
                 }
             }
             ReactionsPreviewComponent(
-                post.reactions
-                    .groupBy { it.reactionType }
-                    .map { it.key to it.value.size },
+                PreviewReactionsList(post.previewReactions).toListType(),
             )
         }
         HorizontalDivider(Modifier.padding(horizontal = 8.dp))
@@ -353,12 +347,12 @@ private fun PreviewPostDetailModalContent() =
                 LoremIpsum(50).values.joinToString(" "),
                 Author.empty().copy(displayName = "John Connor", username = "jconnor92"),
                 listOf(
-                    Reaction.empty().copy(reactionType = ReactionType.HAHA),
-                    Reaction.empty().copy(reactionType = ReactionType.LIKE),
-                    Reaction.empty().copy(reactionType = ReactionType.LIKE),
-                    Reaction.empty().copy(reactionType = ReactionType.LIKE),
-                    Reaction.empty().copy(reactionType = ReactionType.LOVE),
-                    Reaction.empty().copy(reactionType = ReactionType.LOVE),
+                    PreviewReaction.empty().copy(reactionType = ReactionType.HAHA.description),
+                    PreviewReaction.empty().copy(reactionType = ReactionType.LIKE.description),
+                    PreviewReaction.empty().copy(reactionType = ReactionType.LIKE.description),
+                    PreviewReaction.empty().copy(reactionType = ReactionType.LIKE.description),
+                    PreviewReaction.empty().copy(reactionType = ReactionType.LOVE.description),
+                    PreviewReaction.empty().copy(reactionType = ReactionType.LOVE.description),
                 ),
                 "public",
                 12L,
@@ -373,12 +367,15 @@ private fun PreviewCommentPreviewItem() =
         val comment =
             Comment.empty().copy(
                 content = LoremIpsum(20).values.joinToString(" "),
-                author = Author.empty().copy(displayName = "JohnConnor92"),
+                author =
+                    Author
+                        .empty()
+                        .copy(id = "author-preview-id-7", displayName = "JohnConnor92"),
                 previewReactions =
-                    mapOf(
-                        "haha" to 1,
-                        "love" to 2,
-                        "like" to 3,
+                    listOf(
+                        PreviewReaction("", "love", "target-preview-id-4", "author-preview-id-5"),
+                        PreviewReaction("", "haha", "target-preview-id-5", "author-preview-id-6"),
+                        PreviewReaction("", "angry", "target-preview-id-6", "author-preview-id-7"),
                     ),
             )
         CommentPreviewItem(comment = comment, onRespondCommentPressed = {})

@@ -9,7 +9,7 @@ internal data class Comment(
     val content: String,
     val author: Author,
     @SerialName("preview_reactions")
-    val previewReactions: Map<String, Int>,
+    val previewReactions: List<PreviewReaction>,
     @SerialName("created_at")
     val createdAt: Long,
     @SerialName("post_id")

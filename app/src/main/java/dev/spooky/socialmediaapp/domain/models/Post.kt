@@ -4,7 +4,7 @@ data class Post(
     val id: String,
     val content: String,
     val author: Author,
-    val reactions: List<Reaction>,
+    val previewReactions: List<PreviewReaction>,
     val visibility: String,
     val createdAt: Long,
 )

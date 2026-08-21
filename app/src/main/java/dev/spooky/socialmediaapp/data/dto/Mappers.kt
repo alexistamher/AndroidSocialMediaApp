@@ -6,19 +6,20 @@ import dev.spooky.socialmediaapp.domain.models.Author as DomainAuthor
 import dev.spooky.socialmediaapp.domain.models.Comment as DomainComment
 import dev.spooky.socialmediaapp.domain.models.Post as DomainPost
 import dev.spooky.socialmediaapp.domain.models.PostPreview as DomainPostPreview
+import dev.spooky.socialmediaapp.domain.models.PreviewReaction as DomainPreviewReaction
 import dev.spooky.socialmediaapp.domain.models.Reaction as DomainReaction
 
 fun Author.toDomain(): DomainAuthor = DomainAuthor(id, username, displayName, avatarURL = null)
 
 fun PostPreview.toDomain(): DomainPostPreview =
     DomainPostPreview(
-        id,
-        content,
-        author.toDomain(),
-        commentsCount ?: 0,
-        previewReactions ?: emptyMap(),
-        visibility,
-        createdAt,
+        id = id,
+        content = content,
+        author = author.toDomain(),
+        commentsCount = commentsCount,
+        previewReactions = previewReactions.map { it.toDomain() },
+        visibility = visibility,
+        createdAt = createdAt,
     )
 
 internal fun Post.toDomain(): DomainPost =
@@ -26,7 +27,7 @@ internal fun Post.toDomain(): DomainPost =
         id = id,
         content = content,
         author = author.toDomain(),
-        reactions = reactions.map { it.toDomain() },
+        previewReactions = previewReactions.map { it.toDomain() },
         visibility = visibility,
         createdAt = createdAt,
     )
@@ -45,8 +46,16 @@ internal fun Comment.toDomain(): DomainComment =
         id = id,
         content = content,
         author = author.toDomain(),
-        previewReactions = previewReactions,
+        previewReactions = previewReactions.map { it.toDomain() },
         createdAt = createdAt,
         postId = postId,
         parentCommentId = parentCommentId,
+    )
+
+internal fun PreviewReaction.toDomain(): DomainPreviewReaction =
+    DomainPreviewReaction(
+        id,
+        reactionType,
+        targetId,
+        authorId,
     )

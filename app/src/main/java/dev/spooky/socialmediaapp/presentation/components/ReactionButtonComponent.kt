@@ -21,6 +21,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,23 +32,24 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import dev.spooky.socialmediaapp.domain.models.Author
-import dev.spooky.socialmediaapp.domain.models.Reaction
+import dev.spooky.socialmediaapp.domain.models.PreviewReaction
 import dev.spooky.socialmediaapp.domain.models.ReactionType
 import dev.spooky.socialmediaapp.domain.models.UserInfo
 import dev.spooky.socialmediaapp.domain.models.empty
+import dev.spooky.socialmediaapp.domain.models.fromString
 import dev.spooky.socialmediaapp.presentation.screens.home.util.toIcon
 import dev.spooky.socialmediaapp.presentation.util.LocalUserInfo
 
 @Composable
 internal fun ReactionButtonComponent(
-    reactions: List<Reaction>,
+    reactions: List<PreviewReaction>,
     onReactionSelected: (reactionType: ReactionType) -> Unit,
     userInfo: UserInfo = LocalUserInfo.current,
 ) {
-    val ownReaction = reactions.firstOrNull { it.author.id == userInfo.id }
+    val ownReaction = reactions.firstOrNull { it.authorId == userInfo.id }
     val interactionSource = remember { MutableInteractionSource() }
-    val initialReactionType = ownReaction?.reactionType ?: ReactionType.LIKE
+    val initialReactionType =
+        ownReaction?.reactionType?.let { ReactionType.fromString(it) } ?: ReactionType.LIKE
     var reactionsOptionButtonVisible by remember { mutableStateOf(false) }
 
     Box(
@@ -124,15 +126,17 @@ internal fun ReactionButtonComponent(
 private fun PrivateReactionButtonComponent() {
     val reactions =
         listOf(
-            Reaction.empty().copy(reactionType = ReactionType.HAHA),
-            Reaction.empty().copy(reactionType = ReactionType.LIKE),
-            Reaction.empty().copy(reactionType = ReactionType.LIKE),
-            Reaction.empty().copy(reactionType = ReactionType.LIKE),
-            Reaction.empty().copy(
-                reactionType = ReactionType.LOVE,
-                author = Author.empty().copy(id = "preview-id"),
-            ),
-            Reaction.empty().copy(reactionType = ReactionType.LOVE),
+            PreviewReaction("", "haha", "target-preview-id-1", "author-preview-id-1"),
+            PreviewReaction("", "haha", "target-preview-id-2", "author-preview-id-2"),
+            PreviewReaction("", "like", "target-preview-id-3", "author-preview-id-3"),
+            PreviewReaction("", "like", "target-preview-id-4", "author-preview-id-4"),
+            PreviewReaction("", "love", "target-preview-id-5", "author-preview-id-5"),
+            PreviewReaction("", "love", "target-preview-id-6", "author-preview-id-5"),
+            PreviewReaction("", "love", "target-preview-id-7", "author-preview-id-7"),
         )
-    ReactionButtonComponent(reactions = reactions, onReactionSelected = {})
+    CompositionLocalProvider(
+        LocalUserInfo provides UserInfo.empty().copy(id = "author-preview-id-5"),
+    ) {
+        ReactionButtonComponent(reactions = reactions, onReactionSelected = {})
+    }
 }

@@ -11,6 +11,9 @@ import dev.spooky.socialmediaapp.domain.usecase.home.DeleteReactionUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.GetCommentsByPostIdUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.GetPostByIdUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.GetPostsUseCase
+import dev.spooky.socialmediaapp.domain.usecase.home.ToggleReactionUseCase
+import dev.spooky.socialmediaapp.domain.usecase.home.UpdateReactionUseCase
+import dev.spooky.socialmediaapp.presentation.screens.SplashViewModel
 import dev.spooky.socialmediaapp.presentation.screens.home.HomeViewModel
 import dev.spooky.socialmediaapp.presentation.screens.home.post.PostDetailViewModel
 import dev.spooky.socialmediaapp.presentation.screens.login.LoginViewModel
@@ -33,10 +36,13 @@ val appModule =
         factoryOf(::AddCommentUseCase)
         factoryOf(::AddReactionUseCase)
         factoryOf(::DeleteReactionUseCase)
+        factoryOf(::UpdateReactionUseCase)
+        factoryOf(::ToggleReactionUseCase)
 
         // viewModels
         viewModelOf(::LoginViewModel)
         viewModelOf(::RegisterViewModel)
         viewModelOf(::HomeViewModel)
         viewModelOf(::PostDetailViewModel)
+        viewModelOf(::SplashViewModel)
     }

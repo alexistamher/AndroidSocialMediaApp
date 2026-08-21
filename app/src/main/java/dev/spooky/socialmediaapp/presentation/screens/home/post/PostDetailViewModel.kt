@@ -6,10 +6,9 @@ import dev.spooky.socialmediaapp.domain.models.Post
 import dev.spooky.socialmediaapp.domain.models.ReactionType
 import dev.spooky.socialmediaapp.domain.models.TargetType
 import dev.spooky.socialmediaapp.domain.usecase.home.AddCommentUseCase
-import dev.spooky.socialmediaapp.domain.usecase.home.AddReactionUseCase
-import dev.spooky.socialmediaapp.domain.usecase.home.DeleteReactionUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.GetCommentsByPostIdUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.GetPostByIdUseCase
+import dev.spooky.socialmediaapp.domain.usecase.home.ToggleReactionUseCase
 import dev.spooky.socialmediaapp.presentation.screens.BaseViewModel
 import kotlinx.coroutines.launch
 
@@ -17,8 +16,7 @@ internal class PostDetailViewModel(
     private val getPostByIdUseCase: GetPostByIdUseCase,
     private val getCommentsByPostIdUseCase: GetCommentsByPostIdUseCase,
     private val addCommentUseCase: AddCommentUseCase,
-    private val addReactionUseCase: AddReactionUseCase,
-    private val deleteReactionUseCase: DeleteReactionUseCase,
+    private val toggleReactionUseCase: ToggleReactionUseCase,
 ) : BaseViewModel<PostDetailState>() {
     override fun initialState(): PostDetailState = PostDetailState()
 
@@ -50,7 +48,12 @@ internal class PostDetailViewModel(
             val result = addCommentUseCase(comment, postId, currentState.selectedComment?.id)
             if (result.isFailure) return@launch
             val comment = result.getOrNull() ?: return@launch
-            setState { current -> current.copy(comments = current.comments + comment, selectedComment = null) }
+            setState { current ->
+                current.copy(
+                    comments = current.comments + comment,
+                    selectedComment = null,
+                )
+            }
         }
     }
 
@@ -63,55 +66,25 @@ internal class PostDetailViewModel(
         setState { current -> current.copy(selectedComment = comment) }
     }
 
-    fun addReaction(
-        targetId: String,
-        reactionType: ReactionType,
-        targetType: TargetType,
-    ) {
-        viewModelScope.launch {
-            val result =
-                addReactionUseCase(targetId, reactionType, targetType)
-            if (result.isFailure) return@launch
-            val reaction = result.getOrNull() ?: return@launch
-            if (targetType == TargetType.POST) {
-                val reactions = currentState.post?.reactions ?: return@launch
-                setState { current ->
-                    current.run {
-                        copy(post = post?.copy(reactions = reactions + reaction))
-                    }
-                }
-            }
-        }
-    }
-
-    fun deleteReaction(reactionId: String) {
-        viewModelScope.launch {
-            val result = deleteReactionUseCase(reactionId)
-            if (result.isFailure) return@launch
-            val reactions =
-                currentState.post
-                    ?.reactions
-                    ?.filterNot { it.id == reactionId }
-                    .orEmpty()
-            setState { current ->
-                current.run {
-                    copy(post = post?.copy(reactions = reactions))
-                }
-            }
-        }
-    }
-
     fun toggleReaction(
         targetId: String,
         targetType: TargetType,
         reactionType: ReactionType,
     ) {
-        val postReaction = currentState.post?.reactions?.firstOrNull { it.targetId == targetId }
-        if (postReaction != null) {
-            deleteReaction(postReaction.id)
-            return
+        val post = currentState.post ?: return
+        viewModelScope.launch {
+            val result =
+                toggleReactionUseCase(
+                    targetId,
+                    targetType,
+                    reactionType,
+                    post.previewReactions,
+                )
+            if (result.isFailure) return@launch
+            val newReactions = result.getOrNull() ?: return@launch
+            val newPost = post.copy(previewReactions = newReactions)
+            setState { currentState.copy(post = newPost) }
         }
-        addReaction(targetId, reactionType, targetType)
     }
 
     fun reset() {

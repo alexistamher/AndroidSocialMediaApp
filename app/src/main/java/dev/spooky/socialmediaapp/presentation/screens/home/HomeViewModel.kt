@@ -3,10 +3,13 @@ package dev.spooky.socialmediaapp.presentation.screens.home
 import androidx.lifecycle.viewModelScope
 import dev.spooky.socialmediaapp.core.util.error
 import dev.spooky.socialmediaapp.domain.models.PostPreview
+import dev.spooky.socialmediaapp.domain.models.ReactionType
+import dev.spooky.socialmediaapp.domain.models.TargetType
 import dev.spooky.socialmediaapp.domain.usecase.auth.LogoutUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.AddPostUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.DeletePostUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.GetPostsUseCase
+import dev.spooky.socialmediaapp.domain.usecase.home.ToggleReactionUseCase
 import dev.spooky.socialmediaapp.presentation.screens.BaseViewModel
 import dev.spooky.socialmediaapp.presentation.util.ScreenState
 import dev.spooky.socialmediaapp.presentation.util.asSuccess
@@ -19,6 +22,7 @@ internal class HomeViewModel(
     private val addPostUseCase: AddPostUseCase,
     private val deletePostUseCase: DeletePostUseCase,
     private val logoutUseCase: LogoutUseCase,
+    private val toggleReactionUseCase: ToggleReactionUseCase,
 ) : BaseViewModel<ScreenState<HomeState>>() {
     override fun initialState() = ScreenState.Idle
 
@@ -89,6 +93,44 @@ internal class HomeViewModel(
                 if (!::onLogout.isInitialized) return@invokeOnCompletion
                 onLogout()
             }
+    }
+
+    fun toggleReaction(
+        targetId: String,
+        targetType: TargetType,
+        reactionType: ReactionType,
+    ) {
+        val state = currentState.success()
+        val postPreviewIdx =
+            state.posts.indexOfFirst { it.id == targetId }
+        if (postPreviewIdx == -1) return
+        val postPreview =
+            currentState.success().posts.first { it.id == targetId }
+        viewModelScope.launch {
+            val result =
+                toggleReactionUseCase(
+                    targetId,
+                    targetType,
+                    reactionType,
+                    postPreview.previewReactions,
+                )
+            if (result.isFailure) return@launch
+            val newReactions = result.getOrNull() ?: return@launch
+            val newPost = postPreview.copy(previewReactions = newReactions)
+            val newPosts =
+                state.posts.toMutableList().apply {
+                    if (isEmpty()) {
+                        add(newPost)
+                    } else {
+                        set(postPreviewIdx, newPost)
+                    }
+                }
+            setState { current ->
+                current.asSuccess().run {
+                    copy(data = data.copy(posts = newPosts))
+                }
+            }
+        }
     }
 }
 

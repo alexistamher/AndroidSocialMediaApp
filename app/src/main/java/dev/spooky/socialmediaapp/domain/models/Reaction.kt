@@ -10,4 +10,17 @@ data class Reaction(
     companion object
 }
 
+data class PreviewReaction(
+    val id: String,
+    val reactionType: String,
+    val targetId: String,
+    val authorId: String,
+) {
+    companion object
+}
+
 fun Reaction.Companion.empty(): Reaction = Reaction("", "", ReactionType.LIKE, 0L, Author.empty())
+
+fun PreviewReaction.Companion.empty(): PreviewReaction = PreviewReaction("", "", "", "")
+
+internal fun Reaction.toPreview(): PreviewReaction = PreviewReaction(id, reactionType.description, targetId, author.id)
