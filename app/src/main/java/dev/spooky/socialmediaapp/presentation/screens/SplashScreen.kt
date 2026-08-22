@@ -33,6 +33,7 @@ internal fun SplashScreen(
     LaunchedEffect(Unit) {
         viewModel.onValidSession = onNavigateToHome
         viewModel.onInvalidSession = onNavigateToLogin
+        viewModel.startCheck()
     }
 
     Scaffold { mainPadding ->
@@ -70,7 +71,7 @@ internal class SplashViewModel(
     lateinit var onInvalidSession: () -> Unit
     lateinit var onValidSession: () -> Unit
 
-    init {
+    fun startCheck() {
         viewModelScope.launch {
             val validSession = sessionHelper.validateSession()
             // in order to make splash screen visible

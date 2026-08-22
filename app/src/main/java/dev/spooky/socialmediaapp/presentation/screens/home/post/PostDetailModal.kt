@@ -1,7 +1,6 @@
 package dev.spooky.socialmediaapp.presentation.screens.home.post
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -11,32 +10,26 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Send
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.ModeComment
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -110,7 +103,9 @@ internal fun PostDetailModal(
                 },
             )
             CommentsListComponent(
-                Modifier.weight(1f),
+                Modifier
+                    .weight(1f)
+                    .padding(8.dp),
                 comments = state.comments,
                 onRespondCommentPressed = { commentId ->
                     viewModel.setCommentId(commentId)
@@ -120,6 +115,9 @@ internal fun PostDetailModal(
                 },
                 onShowMoreCommentsPressed = { commentId ->
                     viewModel.getCommentComments(commentId)
+                },
+                onDeleteCommentPressed = { commentId ->
+                    viewModel.deleteComment(commentId)
                 },
             )
             state.selectedComment?.let { comment ->
@@ -141,29 +139,41 @@ private fun CommentTextField(onAddComment: (content: String) -> Unit) {
     var commentContent: String by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
 
-    Row(
-        Modifier
-            .imePadding()
-            .padding(8.dp)
-            .fillMaxWidth(),
+    Surface(
+        shadowElevation = 2.dp,
     ) {
-        OutlinedTextField(
-            commentContent,
-            { value -> commentContent = value },
-            Modifier.weight(1f),
-            shape = CircleShape,
-            trailingIcon = {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            OutlinedTextField(
+                commentContent,
+                { value -> commentContent = value },
+                Modifier.weight(1f),
+                shape = CircleShape,
+                colors =
+                    OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        focusedBorderColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    ),
+            )
+
+            FilledTonalIconButton({
+                onAddComment(commentContent)
+                commentContent = ""
+                focusManager.clearFocus()
+            }, enabled = commentContent.isNotEmpty()) {
                 Icon(
-                    Icons.AutoMirrored.Outlined.Send,
+                    Icons.AutoMirrored.Default.Send,
                     null,
-                    Modifier.clickable(enabled = commentContent.isNotEmpty(), onClick = {
-                        onAddComment(commentContent)
-                        commentContent = ""
-                        focusManager.clearFocus()
-                    }),
                 )
-            },
-        )
+            }
+        }
     }
 }
 
@@ -172,43 +182,45 @@ private fun SelectedCommentSection(
     comment: Comment,
     onCloseSelectedCommentPressed: () -> Unit,
 ) {
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .background(
-                MaterialTheme.colorScheme.surfaceContainer,
-                RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-            ).padding(8.dp),
+    Surface(
+        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        shadowElevation = 2.dp,
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                buildAnnotatedString {
-                    append("Reply to ")
-                    pushStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)))
-                    append("@${comment.author.username}")
-                },
-                Modifier.weight(1f),
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-            )
-            IconButton(onCloseSelectedCommentPressed, Modifier.size(24.dp)) {
-                Icon(Icons.Default.Clear, null)
-            }
-        }
-        Row(
+        Column(
             Modifier
-                .height(IntrinsicSize.Min)
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                .fillMaxWidth()
+                .padding(8.dp),
         ) {
-            VerticalDivider(thickness = 4.dp)
-            Text(
-                comment.content,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodyMedium,
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    buildAnnotatedString {
+                        append("Reply to ")
+                        pushStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)))
+                        append("@${comment.author.username}")
+                    },
+                    Modifier.weight(1f),
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                )
+                IconButton(onCloseSelectedCommentPressed, Modifier.size(24.dp)) {
+                    Icon(Icons.Default.Clear, null)
+                }
+            }
+            Row(
+                Modifier
+                    .height(IntrinsicSize.Min)
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                VerticalDivider(thickness = 4.dp)
+                Text(
+                    comment.content,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
         }
     }
 }
@@ -219,70 +231,75 @@ private fun PostDetailModalContent(
     commentsSize: Int,
     onReactionSelected: (targetId: String, targetType: TargetType, reactionType: ReactionType) -> Unit,
 ) {
-    Column {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            AvatarComponent()
-            Column {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text(
-                        post.author.displayName,
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                    )
-                    Text(
-                        "@${post.author.username}",
-                        style =
-                            MaterialTheme.typography.bodyLarge.run {
-                                copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = color.copy(alpha = 0.6f),
-                                )
-                            },
-                    )
-                }
-                Text("${post.createdAt}hrs")
-            }
-        }
-        Text(
-            post.content,
-            Modifier
-                .padding(horizontal = 8.dp)
-                .padding(bottom = 16.dp),
-            style = MaterialTheme.typography.bodyLarge,
-        )
-        HorizontalDivider(Modifier.padding(horizontal = 8.dp))
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            ReactionButtonComponent(
-                post.previewReactions,
-                onReactionSelected = { reactionType ->
-                    onReactionSelected(
-                        post.id,
-                        TargetType.POST,
-                        reactionType,
-                    )
-                },
-            )
-            Spacer(Modifier.weight(1f))
-            if (commentsSize > 0) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Icon(Icons.Outlined.ModeComment, null)
-                    Text(commentsSize.toString())
+    Surface(
+        Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
+        shape = RoundedCornerShape(12.dp),
+        shadowElevation = 2.dp,
+    ) {
+        Column {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                AvatarComponent()
+                Column {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(
+                            post.author.displayName,
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                        )
+                        Text(
+                            "@${post.author.username}",
+                            style =
+                                MaterialTheme.typography.bodyLarge.run {
+                                    copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = color.copy(alpha = 0.6f),
+                                    )
+                                },
+                        )
+                    }
+                    Text("${post.createdAt}hrs")
                 }
             }
-            ReactionsPreviewComponent(
-                PreviewReactionsList(post.previewReactions).toListType(),
+            Text(
+                post.content,
+                Modifier
+                    .padding(horizontal = 8.dp)
+                    .padding(bottom = 16.dp),
+                style = MaterialTheme.typography.bodyLarge,
             )
+            HorizontalDivider(Modifier.padding(horizontal = 8.dp))
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                ReactionButtonComponent(
+                    post.previewReactions,
+                    onReactionSelected = { reactionType ->
+                        onReactionSelected(
+                            post.id,
+                            TargetType.POST,
+                            reactionType,
+                        )
+                    },
+                )
+                Spacer(Modifier.weight(1f))
+                if (commentsSize > 0) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Icon(Icons.Outlined.ModeComment, null)
+                        Text(commentsSize.toString())
+                    }
+                }
+                ReactionsPreviewComponent(
+                    PreviewReactionsList(post.previewReactions).toListType(),
+                )
+            }
         }
-        HorizontalDivider(Modifier.padding(horizontal = 8.dp))
     }
 }
 

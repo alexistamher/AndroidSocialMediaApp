@@ -14,4 +14,6 @@ interface CommentRepository {
         postId: String,
         parentCommentId: String?,
     ): Result<Comment>
+
+    suspend fun deleteComment(commentId: String): Result<Unit>
 }

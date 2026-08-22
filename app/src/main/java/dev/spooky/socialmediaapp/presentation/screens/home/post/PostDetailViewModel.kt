@@ -7,6 +7,7 @@ import dev.spooky.socialmediaapp.domain.models.PreviewReaction
 import dev.spooky.socialmediaapp.domain.models.ReactionType
 import dev.spooky.socialmediaapp.domain.models.TargetType
 import dev.spooky.socialmediaapp.domain.usecase.home.AddCommentUseCase
+import dev.spooky.socialmediaapp.domain.usecase.home.DeleteCommentUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.GetCommentsByTargetIdUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.GetPostByIdUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.ToggleReactionUseCase
@@ -18,6 +19,7 @@ internal class PostDetailViewModel(
     private val getCommentsByTargetIdUseCase: GetCommentsByTargetIdUseCase,
     private val addCommentUseCase: AddCommentUseCase,
     private val toggleReactionUseCase: ToggleReactionUseCase,
+    private val deleteCommentUseCase: DeleteCommentUseCase,
 ) : BaseViewModel<PostDetailState>() {
     override fun initialState(): PostDetailState = PostDetailState()
 
@@ -158,6 +160,35 @@ internal class PostDetailViewModel(
             val newReactions = result.getOrNull() ?: return@launch
             val newPost = post.copy(previewReactions = newReactions)
             setState { currentState.copy(post = newPost) }
+        }
+    }
+
+    private fun deleteNestedComment(
+        comments: List<Comment>?,
+        commentId: String,
+    ): List<Comment>? {
+        if (comments == null) return null
+        val contains = comments.any { it.id == commentId }
+        if (contains) {
+            return comments.filterNot { it.id == commentId }
+        }
+        return comments.map {
+            it.copy(
+                commentChildren =
+                    deleteNestedComment(
+                        it.commentChildren,
+                        commentId,
+                    ),
+            )
+        }
+    }
+
+    fun deleteComment(commentId: String) {
+        viewModelScope.launch {
+            val result = deleteCommentUseCase(commentId)
+            if (result.isFailure) return@launch
+            val comments = deleteNestedComment(currentState.comments, commentId).orEmpty()
+            setState { current -> current.copy(comments = comments) }
         }
     }
 

@@ -20,6 +20,7 @@ fun RootNavigation() {
     val helper = koinInject<SessionHelper>()
     val userInfo by helper.userInfo.collectAsStateWithLifecycle()
     val navController = rememberNavController()
+
     NavHost(
         navController = navController,
         startDestination = Screen.Splash,

@@ -39,7 +39,6 @@ class CommentRepositoryImpl(
         if (response.status != HttpStatusCode.OK) {
             return Result.failed("failed on getting post comments")
         }
-        println("*_*: response: ${response.bodyAsText()}")
 
         val res = response.body<GetCommentsResponse>()
         val comments = res.comments.map { it.toDomain() }
@@ -65,5 +64,18 @@ class CommentRepositoryImpl(
         val res = response.body<DataComment>()
         val comment = res.toDomain()
         return Result.success(comment)
+    }
+
+    override suspend fun deleteComment(commentId: String): Result<Unit> {
+        val auth = sessionHelper.getAuth() ?: return Result.failed("unauthorized")
+        val response =
+            http.request("$baseUrl/comments/$commentId") {
+                method = HttpMethod.Delete
+                bearerAuth(auth.accessToken)
+            }
+        if (response.status != HttpStatusCode.OK) {
+            return Result.failed("failed on deleting comment")
+        }
+        return Result.success(Unit)
     }
 }

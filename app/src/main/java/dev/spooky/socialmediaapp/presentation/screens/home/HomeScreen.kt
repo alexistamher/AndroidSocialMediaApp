@@ -1,6 +1,5 @@
 package dev.spooky.socialmediaapp.presentation.screens.home
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,18 +9,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.outlined.KeyOff
 import androidx.compose.material.icons.outlined.ModeComment
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -31,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -60,6 +60,7 @@ import dev.spooky.socialmediaapp.domain.models.ReactionType
 import dev.spooky.socialmediaapp.domain.models.TargetType
 import dev.spooky.socialmediaapp.domain.models.UserInfo
 import dev.spooky.socialmediaapp.domain.models.empty
+import dev.spooky.socialmediaapp.presentation.components.AvatarComponent
 import dev.spooky.socialmediaapp.presentation.components.ReactionButtonComponent
 import dev.spooky.socialmediaapp.presentation.components.ReactionsPreviewComponent
 import dev.spooky.socialmediaapp.presentation.screens.home.post.PostDetailModal
@@ -213,19 +214,16 @@ private fun PostsContent(
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        itemsIndexed(
+        items(
             items = posts,
-            key = { _, item -> item.id },
-        ) { idx, post ->
+            key = { item -> item.id },
+        ) { post ->
             PostPreviewItem(
                 post = post,
                 onDeletePostPressed = onDeletePostPressed,
                 onPostPressed = onPostPressed,
                 onReactionPressed = onReactionPressed,
             )
-            if (idx < posts.lastIndex) {
-                HorizontalDivider()
-            }
         }
     }
 }
@@ -239,89 +237,87 @@ private fun PostPreviewItem(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Column {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .clickable { onPostPressed(post.id) }
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Box(
+    Surface(
+        Modifier.clickable { onPostPressed(post.id) },
+        shape = RoundedCornerShape(12.dp),
+        shadowElevation = 2.dp,
+    ) {
+        Column {
+            Row(
                 Modifier
-                    .size(60.dp)
-                    .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape),
-                contentAlignment = Alignment.Center,
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Icon(
-                    Icons.Default.Face,
-                    null,
-                    Modifier.size(50.dp),
-                    tint = MaterialTheme.colorScheme.secondary,
-                )
-            }
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
+                AvatarComponent()
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(
-                        Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(
-                            post.author.displayName,
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                        )
-                        Text(
-                            "@${post.author.username}",
-                            style =
-                                MaterialTheme.typography.titleMedium.run {
-                                    copy(
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = color.copy(alpha = 0.6f),
-                                    )
-                                },
-                        )
-                        Spacer(Modifier.weight(1f))
-                        Text("2h")
-                    }
-                    Box {
-                        IconButton(onClick = { expanded = !expanded }) {
-                            Icon(Icons.Default.MoreHoriz, contentDescription = "More options")
-                        }
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
+                        Row(
+                            Modifier.weight(1f),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
-                            DropdownMenuItem(
-                                text = { Text("Delete post") },
-                                onClick = { onDeletePostPressed(post.id) },
+                            Text(
+                                post.author.displayName,
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                             )
+                            Text(
+                                "@${post.author.username}",
+                                style =
+                                    MaterialTheme.typography.titleMedium.run {
+                                        copy(
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = color.copy(alpha = 0.6f),
+                                        )
+                                    },
+                            )
+                            Spacer(Modifier.weight(1f))
+                            Text("2h")
+                        }
+                        Box {
+                            IconButton(onClick = { expanded = !expanded }) {
+                                Icon(Icons.Default.MoreHoriz, contentDescription = "More options")
+                            }
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false },
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Delete post") },
+                                    onClick = { onDeletePostPressed(post.id) },
+                                )
+                            }
                         }
                     }
+                    Text(post.content, style = MaterialTheme.typography.bodyLarge)
                 }
-                Text(post.content, style = MaterialTheme.typography.bodyMedium)
-                Row(
-                    Modifier.padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    ReactionButtonComponent(
-                        post.previewReactions,
-                        { reactionType ->
-                            onReactionPressed(post.id, TargetType.POST, reactionType)
-                        },
-                    )
+            }
+            HorizontalDivider(Modifier.padding(8.dp))
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp, horizontal = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                ReactionButtonComponent(
+                    post.previewReactions,
+                    { reactionType ->
+                        onReactionPressed(post.id, TargetType.POST, reactionType)
+                    },
+                )
+                if (post.commentsCount > 0) {
                     Row(
+                        modifier = Modifier.padding(horizontal = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         Icon(Icons.Outlined.ModeComment, null)
                         Text(post.commentsCount.toString())
                     }
-                    Spacer(Modifier.weight(1f))
-                    ReactionsPreviewComponent(PreviewReactionsList(post.previewReactions).toListType())
                 }
+                Spacer(Modifier.weight(1f))
+                ReactionsPreviewComponent(PreviewReactionsList(post.previewReactions).toListType())
             }
         }
     }
@@ -334,7 +330,8 @@ private fun PostFieldSection(onAddPostPressed: (content: String) -> Unit) {
     Card(
         Modifier
             .fillMaxWidth()
-            .padding(4.dp),
+            .padding(vertical = 8.dp, horizontal = 12.dp),
+        elevation = CardDefaults.elevatedCardElevation(2.dp),
     ) {
         TextField(
             content,

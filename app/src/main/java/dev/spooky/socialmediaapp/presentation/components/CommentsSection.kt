@@ -7,20 +7,30 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.outlined.ModeComment
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -44,6 +54,7 @@ internal fun CommentsListComponent(
     onRespondCommentPressed: (commentId: String) -> Unit,
     onReactionSelected: (targetId: String, targetType: TargetType, reactionType: ReactionType) -> Unit,
     onShowMoreCommentsPressed: (commentId: String) -> Unit,
+    onDeleteCommentPressed: (commentId: String) -> Unit,
 ) {
     LazyColumn(modifier) {
         items(items = comments, key = { it.id }) { comment ->
@@ -52,6 +63,7 @@ internal fun CommentsListComponent(
                 onRespondCommentPressed = onRespondCommentPressed,
                 onReactionSelected = onReactionSelected,
                 onShowMoreCommentsPressed = onShowMoreCommentsPressed,
+                onDeleteCommentPressed = onDeleteCommentPressed,
             )
         }
     }
@@ -63,15 +75,17 @@ private fun CommentChildrenListComponent(
     onRespondCommentPressed: (commentId: String) -> Unit,
     onReactionSelected: (targetId: String, targetType: TargetType, reactionType: ReactionType) -> Unit,
     onShowMoreCommentsPressed: (commentId: String) -> Unit,
+    onDeleteCommentPressed: (commentId: String) -> Unit,
 ) {
     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-        Column(Modifier.fillMaxWidth(0.86f)) {
+        Column(Modifier.fillMaxWidth(0.9f)) {
             comments.forEach { comment ->
                 CommentPreviewItem(
                     comment = comment,
                     onRespondCommentPressed = onRespondCommentPressed,
                     onReactionSelected = onReactionSelected,
                     onShowMoreCommentsPressed = onShowMoreCommentsPressed,
+                    onDeleteCommentPressed = onDeleteCommentPressed,
                 )
             }
         }
@@ -84,72 +98,102 @@ private fun CommentPreviewItem(
     onRespondCommentPressed: (commentId: String) -> Unit,
     onReactionSelected: (targetId: String, targetType: TargetType, reactionType: ReactionType) -> Unit,
     onShowMoreCommentsPressed: (commentId: String) -> Unit,
+    onDeleteCommentPressed: (commentId: String) -> Unit,
 ) {
-    Column {
-        Row {
-            AvatarComponent()
-            Column {
-                Surface(
-                    Modifier
-                        .fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                ) {
-                    Column(Modifier.padding(8.dp)) {
-                        Row {
-                            Text(
-                                comment.author.displayName,
-                                Modifier.weight(1f),
-                                style =
-                                    MaterialTheme.typography.bodyLarge.run {
-                                        copy(
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = color.copy(0.6f),
+    var commentOptionsVisible by remember { mutableStateOf(false) }
+    Surface(
+        Modifier.padding(4.dp),
+        shape = RoundedCornerShape(12.dp),
+        shadowElevation = 2.dp,
+    ) {
+        Column(Modifier.padding(4.dp)) {
+            Row {
+                AvatarComponent(AvatarComponentSize.SMALL)
+                Column {
+                    Surface(
+                        Modifier
+                            .fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                    ) {
+                        Column(Modifier.padding(8.dp)) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                Text(
+                                    comment.author.displayName,
+                                    Modifier.weight(1f),
+                                    style =
+                                        MaterialTheme.typography.bodyLarge.run {
+                                            copy(
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = color.copy(0.6f),
+                                            )
+                                        },
+                                )
+                                Text("${comment.createdAt}h")
+                                Box {
+                                    IconButton({
+                                        commentOptionsVisible = true
+                                    }, Modifier.size(24.dp)) { Icon(Icons.Default.MoreHoriz, null) }
+                                    DropdownMenu(commentOptionsVisible, {
+                                        commentOptionsVisible = false
+                                    }) {
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text("Delete")
+                                            },
+                                            leadingIcon = { Icon(Icons.Default.Delete, null) },
+                                            onClick = {
+                                                onDeleteCommentPressed(comment.id)
+                                                commentOptionsVisible = false
+                                            },
                                         )
-                                    },
-                            )
-                            Text("${comment.createdAt}h")
-                        }
-                        Text(comment.content)
-                    }
-                }
-                Row(
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    ReactionButtonComponent(
-                        comment.previewReactions,
-                        onReactionSelected = { reactionType ->
-                            onReactionSelected(comment.id, TargetType.COMMENT, reactionType)
-                        },
-                    )
-                    if (comment.commentsCount > 0) {
-                        TextButton({
-                            onShowMoreCommentsPressed(comment.id)
-                        }, enabled = comment.commentChildren == null) {
-                            Icon(Icons.Outlined.ModeComment, null)
-                            Spacer(Modifier.width(4.dp))
-                            Text(comment.commentsCount.toString())
+                                    }
+                                }
+                            }
+                            Text(comment.content)
                         }
                     }
-                    Button({
-                        onRespondCommentPressed(comment.id)
-                    }, colors = ButtonDefaults.textButtonColors()) {
-                        Text("reply")
+                    Row(
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        ReactionButtonComponent(
+                            comment.previewReactions,
+                            onReactionSelected = { reactionType ->
+                                onReactionSelected(comment.id, TargetType.COMMENT, reactionType)
+                            },
+                        )
+                        if (comment.commentsCount > 0) {
+                            TextButton({
+                                onShowMoreCommentsPressed(comment.id)
+                            }, enabled = comment.commentChildren == null) {
+                                Icon(Icons.Outlined.ModeComment, null)
+                                Spacer(Modifier.width(4.dp))
+                                Text(comment.commentsCount.toString())
+                            }
+                        }
+                        Button({
+                            onRespondCommentPressed(comment.id)
+                        }, colors = ButtonDefaults.textButtonColors()) {
+                            Text("reply")
+                        }
+                        ReactionsPreviewComponent(
+                            reactions = PreviewReactionsList(comment.previewReactions).toListType(),
+                        )
                     }
-                    ReactionsPreviewComponent(
-                        reactions = PreviewReactionsList(comment.previewReactions).toListType(),
-                    )
                 }
             }
-        }
 
-        comment.commentChildren?.let { comments ->
-            CommentChildrenListComponent(
-                comments = comments,
-                onRespondCommentPressed = onRespondCommentPressed,
-                onReactionSelected = onReactionSelected,
-                onShowMoreCommentsPressed = onShowMoreCommentsPressed,
-            )
+            comment.commentChildren?.let { comments ->
+                CommentChildrenListComponent(
+                    comments = comments,
+                    onRespondCommentPressed = onRespondCommentPressed,
+                    onReactionSelected = onReactionSelected,
+                    onShowMoreCommentsPressed = onShowMoreCommentsPressed,
+                    onDeleteCommentPressed = onDeleteCommentPressed,
+                )
+            }
         }
     }
 }
@@ -205,5 +249,6 @@ private fun PreviewCommentPreviewItem() =
             onRespondCommentPressed = {},
             onReactionSelected = { _, _, _ -> },
             onShowMoreCommentsPressed = {},
+            onDeleteCommentPressed = {},
         )
     }
