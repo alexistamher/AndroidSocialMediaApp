@@ -8,6 +8,8 @@ internal data class Comment(
     val id: String,
     val content: String,
     val author: Author,
+    @SerialName("comments_count")
+    val commentsCount: Int,
     @SerialName("preview_reactions")
     val previewReactions: List<PreviewReaction>,
     @SerialName("created_at")

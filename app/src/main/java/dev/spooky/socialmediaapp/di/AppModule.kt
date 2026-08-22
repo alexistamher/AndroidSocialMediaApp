@@ -8,7 +8,7 @@ import dev.spooky.socialmediaapp.domain.usecase.home.AddPostUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.AddReactionUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.DeletePostUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.DeleteReactionUseCase
-import dev.spooky.socialmediaapp.domain.usecase.home.GetCommentsByPostIdUseCase
+import dev.spooky.socialmediaapp.domain.usecase.home.GetCommentsByTargetIdUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.GetPostByIdUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.GetPostsUseCase
 import dev.spooky.socialmediaapp.domain.usecase.home.ToggleReactionUseCase
@@ -32,7 +32,7 @@ val appModule =
         factoryOf(::AddPostUseCase)
         factoryOf(::DeletePostUseCase)
         factoryOf(::GetPostByIdUseCase)
-        factoryOf(::GetCommentsByPostIdUseCase)
+        factoryOf(::GetCommentsByTargetIdUseCase)
         factoryOf(::AddCommentUseCase)
         factoryOf(::AddReactionUseCase)
         factoryOf(::DeleteReactionUseCase)

@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +15,8 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -35,6 +36,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -62,6 +64,7 @@ import dev.spooky.socialmediaapp.domain.models.ReactionType
 import dev.spooky.socialmediaapp.domain.models.TargetType
 import dev.spooky.socialmediaapp.domain.models.empty
 import dev.spooky.socialmediaapp.presentation.components.AvatarComponent
+import dev.spooky.socialmediaapp.presentation.components.CommentsListComponent
 import dev.spooky.socialmediaapp.presentation.components.ReactionButtonComponent
 import dev.spooky.socialmediaapp.presentation.components.ReactionsPreviewComponent
 import dev.spooky.socialmediaapp.presentation.screens.home.util.PreviewReactionsList
@@ -106,9 +109,19 @@ internal fun PostDetailModal(
                     viewModel.toggleReaction(targetId, targetType, reactionType)
                 },
             )
-            CommentsSection(comments = state.comments, onRespondCommentPressed = { commentId ->
-                viewModel.setCommentId(commentId)
-            })
+            CommentsListComponent(
+                Modifier.weight(1f),
+                comments = state.comments,
+                onRespondCommentPressed = { commentId ->
+                    viewModel.setCommentId(commentId)
+                },
+                onReactionSelected = { targetId, targetType, reactionType ->
+                    viewModel.toggleReaction(targetId, targetType, reactionType)
+                },
+                onShowMoreCommentsPressed = { commentId ->
+                    viewModel.getCommentComments(commentId)
+                },
+            )
             state.selectedComment?.let { comment ->
                 SelectedCommentSection(comment = comment, onCloseSelectedCommentPressed = {
                     viewModel.setCommentId(
@@ -196,70 +209,6 @@ private fun SelectedCommentSection(
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.bodyMedium,
             )
-        }
-    }
-}
-
-@Composable
-private fun ColumnScope.CommentsSection(
-    comments: List<Comment>,
-    onRespondCommentPressed: (commentId: String) -> Unit,
-) {
-    LazyColumn(
-        Modifier
-            .weight(1f)
-            .padding(8.dp),
-    ) {
-        items(comments) { comment ->
-            CommentPreviewItem(comment, onRespondCommentPressed)
-        }
-    }
-}
-
-@Composable
-private fun CommentPreviewItem(
-    comment: Comment,
-    onRespondCommentPressed: (commentId: String) -> Unit,
-) {
-    Row(Modifier.fillMaxWidth()) {
-        AvatarComponent()
-        Column {
-            Surface(
-                Modifier
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                Column(Modifier.padding(8.dp)) {
-                    Row {
-                        Text(
-                            comment.author.displayName,
-                            Modifier.weight(1f),
-                            style =
-                                MaterialTheme.typography.bodyLarge.run {
-                                    copy(fontWeight = FontWeight.SemiBold, color = color.copy(0.6f))
-                                },
-                        )
-                        Text("${comment.createdAt}h")
-                    }
-                    Text(comment.content)
-                }
-            }
-            Row(
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                ReactionButtonComponent(emptyList(), {
-                    // TODO: agregar reactions e interacción al seleccionar la reaction
-                })
-                Button({
-                    onRespondCommentPressed(comment.id)
-                }, colors = ButtonDefaults.textButtonColors()) {
-                    Text("reply")
-                }
-                ReactionsPreviewComponent(
-                    reactions = PreviewReactionsList(comment.previewReactions).toListType(),
-                )
-            }
         }
     }
 }
@@ -358,27 +307,6 @@ private fun PreviewPostDetailModalContent() =
                 12L,
             )
         PostDetailModalContent(post = post, commentsSize = 3, onReactionSelected = { _, _, _ -> })
-    }
-
-@Preview(showBackground = true)
-@Composable
-private fun PreviewCommentPreviewItem() =
-    SocialMediaAppTheme {
-        val comment =
-            Comment.empty().copy(
-                content = LoremIpsum(20).values.joinToString(" "),
-                author =
-                    Author
-                        .empty()
-                        .copy(id = "author-preview-id-7", displayName = "JohnConnor92"),
-                previewReactions =
-                    listOf(
-                        PreviewReaction("", "love", "target-preview-id-4", "author-preview-id-5"),
-                        PreviewReaction("", "haha", "target-preview-id-5", "author-preview-id-6"),
-                        PreviewReaction("", "angry", "target-preview-id-6", "author-preview-id-7"),
-                    ),
-            )
-        CommentPreviewItem(comment = comment, onRespondCommentPressed = {})
     }
 
 @Preview(showBackground = true)

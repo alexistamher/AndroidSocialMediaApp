@@ -163,7 +163,9 @@ internal fun HomeScreen(
                             .padding(mainPadding)
                             .fillMaxSize(),
                     ) {
-                        PostFieldSection()
+                        PostFieldSection(onAddPostPressed = { content ->
+                            viewModel.addPost(content)
+                        })
                         if (posts.isEmpty()) {
                             Box(
                                 Modifier
@@ -236,76 +238,80 @@ private fun PostPreviewItem(
     onReactionPressed: (targetId: String, targetType: TargetType, reactionType: ReactionType) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .clickable { onPostPressed(post.id) }
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Box(
+
+    Column {
+        Row(
             Modifier
-                .size(60.dp)
-                .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape),
-            contentAlignment = Alignment.Center,
+                .fillMaxWidth()
+                .clickable { onPostPressed(post.id) }
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Icon(
-                Icons.Default.Face,
-                null,
-                Modifier.size(50.dp),
-                tint = MaterialTheme.colorScheme.secondary,
-            )
-        }
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+            Box(
+                Modifier
+                    .size(60.dp)
+                    .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape),
+                contentAlignment = Alignment.Center,
             ) {
-                Row(
-                    Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Text(
-                        post.author.displayName,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                    )
-                    Text(
-                        "@${post.author.username}",
-                        style =
-                            MaterialTheme.typography.titleMedium.run {
-                                copy(fontWeight = FontWeight.SemiBold, color = color.copy(alpha = 0.6f))
-                            },
-                    )
-                    Spacer(Modifier.weight(1f))
-                    Text("2h")
-                }
-                Box {
-                    IconButton(onClick = { expanded = !expanded }) {
-                        Icon(Icons.Default.MoreHoriz, contentDescription = "More options")
-                    }
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Delete post") },
-                            onClick = { onDeletePostPressed(post.id) },
-                        )
-                    }
-                }
-            }
-            Text(post.content, style = MaterialTheme.typography.bodyMedium)
-            Row(
-                Modifier.padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                ReactionButtonComponent(
-                    post.previewReactions,
-                    { reactionType ->
-                        onReactionPressed(post.id, TargetType.POST, reactionType)
-                    },
+                Icon(
+                    Icons.Default.Face,
+                    null,
+                    Modifier.size(50.dp),
+                    tint = MaterialTheme.colorScheme.secondary,
                 )
-                if (post.commentsCount != 0) {
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Row(
+                        Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Text(
+                            post.author.displayName,
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                        )
+                        Text(
+                            "@${post.author.username}",
+                            style =
+                                MaterialTheme.typography.titleMedium.run {
+                                    copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = color.copy(alpha = 0.6f),
+                                    )
+                                },
+                        )
+                        Spacer(Modifier.weight(1f))
+                        Text("2h")
+                    }
+                    Box {
+                        IconButton(onClick = { expanded = !expanded }) {
+                            Icon(Icons.Default.MoreHoriz, contentDescription = "More options")
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Delete post") },
+                                onClick = { onDeletePostPressed(post.id) },
+                            )
+                        }
+                    }
+                }
+                Text(post.content, style = MaterialTheme.typography.bodyMedium)
+                Row(
+                    Modifier.padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    ReactionButtonComponent(
+                        post.previewReactions,
+                        { reactionType ->
+                            onReactionPressed(post.id, TargetType.POST, reactionType)
+                        },
+                    )
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -313,17 +319,16 @@ private fun PostPreviewItem(
                         Icon(Icons.Outlined.ModeComment, null)
                         Text(post.commentsCount.toString())
                     }
+                    Spacer(Modifier.weight(1f))
+                    ReactionsPreviewComponent(PreviewReactionsList(post.previewReactions).toListType())
                 }
-                Spacer(Modifier.weight(1f))
-                ReactionsPreviewComponent(PreviewReactionsList(post.previewReactions).toListType())
             }
         }
     }
 }
 
 @Composable
-private fun PostFieldSection() {
-    val viewModel: HomeViewModel = koinViewModel<HomeViewModel>()
+private fun PostFieldSection(onAddPostPressed: (content: String) -> Unit) {
     var content by remember { mutableStateOf("") }
 
     Card(
@@ -347,7 +352,7 @@ private fun PostFieldSection() {
         ) {
             Button(
                 {
-                    viewModel.addPost(content)
+                    onAddPostPressed(content)
                 },
                 enabled = content.isNotEmpty(),
             ) {
@@ -361,7 +366,7 @@ private fun PostFieldSection() {
 @Composable
 private fun PreviewPostFieldSection() =
     Box(Modifier.padding(20.dp)) {
-        PostFieldSection()
+        PostFieldSection(onAddPostPressed = {})
     }
 
 @Preview(showBackground = true)
@@ -382,7 +387,12 @@ private fun PreviewPostsContent() {
                 0L,
             )
         }
-    PostsContent(posts, Modifier, onDeletePostPressed = {}, onReactionPressed = { _, _, _ -> })
+    PostsContent(
+        posts,
+        Modifier,
+        onDeletePostPressed = {},
+        onReactionPressed = { _, _, _ -> },
+    )
 }
 
 @Composable

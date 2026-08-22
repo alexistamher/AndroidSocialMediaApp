@@ -8,6 +8,7 @@ import dev.spooky.socialmediaapp.data.dto.GetCommentsResponse
 import dev.spooky.socialmediaapp.data.dto.toDomain
 import dev.spooky.socialmediaapp.data.util.SessionHelper
 import dev.spooky.socialmediaapp.domain.models.Comment
+import dev.spooky.socialmediaapp.domain.models.TargetType
 import dev.spooky.socialmediaapp.domain.repository.CommentRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -24,16 +25,22 @@ class CommentRepositoryImpl(
     private val baseUrl: String,
     private val sessionHelper: SessionHelper,
 ) : CommentRepository {
-    override suspend fun getCommentsByPostId(postId: String): Result<List<Comment>> {
+    override suspend fun getCommentsByTargetId(
+        targetId: String,
+        targetType: TargetType,
+    ): Result<List<Comment>> {
+        val path = if (targetType == TargetType.POST) "post" else "comment"
         val auth = sessionHelper.getAuth() ?: return Result.failed("unauthorized")
         val response =
-            http.request("$baseUrl/comments/post/$postId") {
+            http.request("$baseUrl/comments/$path/$targetId") {
                 method = HttpMethod.Get
                 bearerAuth(auth.accessToken)
             }
         if (response.status != HttpStatusCode.OK) {
             return Result.failed("failed on getting post comments")
         }
+        println("*_*: response: ${response.bodyAsText()}")
+
         val res = response.body<GetCommentsResponse>()
         val comments = res.comments.map { it.toDomain() }
         return Result.success(comments)
