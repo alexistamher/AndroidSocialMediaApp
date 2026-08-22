@@ -81,7 +81,7 @@ internal class SplashViewModel(
                 return@launch
             }
             if (::onInvalidSession.isInitialized) {
-                onInvalidSession
+                onInvalidSession()
             }
         }
     }

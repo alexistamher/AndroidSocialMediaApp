@@ -76,12 +76,24 @@ internal class PostDetailViewModel(
         }
     }
 
+    fun findComment(
+        comments: List<Comment>,
+        commentId: String,
+    ): Comment {
+        val comment = comments.firstOrNull { it.id == commentId }
+        if (comment != null) return comment
+
+        return comments.filterNot { it.commentChildren == null }.firstNotNullOf {
+            findComment(it.commentChildren!!, commentId)
+        }
+    }
+
     fun setCommentId(commentId: String?) {
         if (commentId == null) {
             setState { current -> current.copy(selectedComment = null) }
             return
         }
-        val comment = currentState.comments.firstOrNull { it.id == commentId } ?: return
+        val comment = findComment(currentState.comments, commentId)
         setState { current -> current.copy(selectedComment = comment) }
     }
 
@@ -94,16 +106,16 @@ internal class PostDetailViewModel(
         val tempComment = comment.commentChildren?.firstOrNull { it.id == commentId }
         if (tempComment != null) return Pair(tempComment, prevLevel + 1)
         return comment.commentChildren
-            ?.firstOrNull {
+            ?.firstNotNullOf {
                 findComment(
                     it,
                     commentId,
                     prevLevel + 1,
-                ) != null
-            }?.let { Pair(it, prevLevel) }
+                )
+            }
     }
 
-    fun insertNestedReactions(
+    fun insertNestedReaction(
         commentId: String,
         reactions: List<PreviewReaction>,
         comments: List<Comment>?,
@@ -114,7 +126,7 @@ internal class PostDetailViewModel(
             } else {
                 it.copy(
                     commentChildren =
-                        insertNestedReactions(
+                        insertNestedReaction(
                             commentId,
                             reactions,
                             it.commentChildren,
@@ -141,7 +153,7 @@ internal class PostDetailViewModel(
                     )
                 if (result.isFailure) return@launch
                 val newReactions = result.getOrNull() ?: return@launch
-                val newComments = insertNestedReactions(targetId, newReactions, comments).orEmpty()
+                val newComments = insertNestedReaction(targetId, newReactions, comments).orEmpty()
                 setState { currentState.copy(comments = newComments) }
             }
             return

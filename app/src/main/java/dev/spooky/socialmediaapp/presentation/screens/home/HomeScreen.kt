@@ -15,12 +15,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.KeyOff
 import androidx.compose.material.icons.outlined.ModeComment
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -283,6 +283,7 @@ private fun PostPreviewItem(
                                 onDismissRequest = { expanded = false },
                             ) {
                                 DropdownMenuItem(
+                                    leadingIcon = { Icon(Icons.Outlined.Delete, null) },
                                     text = { Text("Delete post") },
                                     onClick = { onDeletePostPressed(post.id) },
                                 )

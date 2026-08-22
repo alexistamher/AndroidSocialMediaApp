@@ -140,7 +140,7 @@ private fun CommentPreviewItem(
                                     }) {
                                         DropdownMenuItem(
                                             text = {
-                                                Text("Delete")
+                                                Text("Delete comment")
                                             },
                                             leadingIcon = { Icon(Icons.Default.Delete, null) },
                                             onClick = {

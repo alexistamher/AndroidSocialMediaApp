@@ -34,7 +34,7 @@ fun RootNavigation() {
                 },
                 onNavigateToHome = {
                     navController.navigate(Screen.Home) {
-                        popUpTo(Screen.Login) { inclusive = true }
+                        popUpTo(Screen.Splash) { inclusive = true }
                     }
                 },
             )
